@@ -1,0 +1,28 @@
+
+html, body, #root, #container {
+  position: fixed;
+  height: 100%;
+  margin: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+  background: "#333";
+}
+
+#container > * {
+  width: 100%;
+  max-width: 1280px;
+  margin: auto;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-list-item-content-prefix {
+  max-width: 6rem;
+  overflow: auto;
+}
