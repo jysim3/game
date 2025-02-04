@@ -1,22 +1,11 @@
-import { Button, Card, Col, Flex, Row, Space, Typography } from "antd";
-import {
-  Unsubscribe,
-  onValue,
-  ref,
-  serverTimestamp,
-  set as setDatabase,
-  update as updateDatabase,
-} from "firebase/database";
+import { Card, Col, Flex, Row, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import { database } from "../../api/firebaseConfig";
 import personLogo from "../../assets/jysim.png";
 
-import { Dialog, List, Segmented } from "antd-mobile";
+import { List, Segmented } from "antd-mobile";
 import { useParams } from "react-router-dom";
-import { GameStoreType } from "../../api/gamestore";
-import { useNicknameStore } from "../_app";
+import { createGameStore } from "../../api/gamestore";
+import ActionButton from "../../components/ActionButton";
 import dieImages from "./_assets";
 
 type DieType = 1 | 2 | 3 | 4 | 5 | 6;
@@ -27,16 +16,11 @@ type UserDiceType = {
   nickname?: string;
 };
 
-type GameActions<UserGameDataType, GameDataType = object> = {
-  setUserData: (data: UserGameDataType) => void;
-  updateGameData: (data: GameDataType) => void;
-  subscribe: (roomId: string) => Unsubscribe;
-};
-
 type DiceGameActions = {
   open: () => void;
   startNew: () => void;
-} & GameActions<UserDiceType>;
+  reroll: () => void;
+};
 
 const rollDice = () => {
   return Array(5)
@@ -45,83 +29,42 @@ const rollDice = () => {
     .map((x) => Math.round(x) as 1 | 2 | 3 | 4 | 5 | 6);
 };
 
-const useGameStore = create<DiceGameActions & GameStoreType<UserDiceType>>()(
-  persist(
-    (set, get) => ({
-      open: () => {},
-      startNew: () => {},
-      gameData: { status: "open", round: 0, users: {} },
-      lastUpdated: 0,
-      gameId: "dice",
-
-      userName: useNicknameStore.getState().username,
-      roomId: "",
-
-      setUserData: (data: UserDiceType) =>
-        get().roomId
-          ? setDatabase(
-              ref(database, `room/${get().roomId}/users/` + get().userName),
-              {
-                ...data,
-                nickname: useNicknameStore.getState().nickname,
-              },
-            )
-          : null,
-      subscribe: (roomId: string = "hello") => {
-        set((state) => ({ ...state, roomId }));
-        return onValue(ref(database, `/room/${roomId}/`), (snapshot) => {
-          const data = snapshot.val() || {};
-          if (!data.round) {
-            updateDatabase(ref(database, `room/${roomId}`), {
-              round: 0,
-              status: "running",
-              gameId: "dice",
-              lastUpdated: serverTimestamp(),
-            });
-            setDatabase(
-              ref(database, `room/${roomId}/users/` + get().userName),
-              { round: -1 },
-            );
-          } else if (!data?.users?.[get().userName]) {
-            setDatabase(
-              ref(database, `room/${roomId}/users/` + get().userName),
-              { round: -1 },
-            );
-          } else {
-            set((state) => ({ ...state, gameData: data }));
-          }
-        });
-      },
-      updateGameData: (data) =>
-        updateDatabase(ref(database, `room/${get().roomId}`), {
-          ...data,
-          gameId: "dice",
-          lastUpdated: serverTimestamp(),
-        }),
-    }),
-    {
-      name: "gameData", // name of the item in the storage (must be unique)
-      storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
+const useGameStore = createGameStore<UserDiceType, DiceGameActions>({
+  gameId: "dice",
+  initialData: { status: "open", round: 0, users: {} },
+  actions: (_, get) => ({
+    open: () => get().updateGameData({ status: "open" }),
+    startNew: () => {
+      const {
+        gameData: { round },
+        updateGameData,
+        setUserData,
+      } = get();
+      updateGameData({
+        round: round ? round + 1 : 1,
+        status: "running",
+      });
+      setUserData({
+        round: round ? round + 1 : 1,
+        dice: rollDice(),
+      });
     },
-  ),
-);
+    reroll: () =>
+      get().setUserData({
+        dice: rollDice(),
+        round: get().gameData.round,
+      }),
+  }),
+});
 
 function App() {
-  const gameData = useGameStore((state) => state.gameData) || {};
-  const userName = useGameStore((state) => state.userName);
-  const userData = gameData.users?.[userName] as undefined | UserDiceType;
-
-  const status = useGameStore((state) => state.gameData?.status);
-  const round = useGameStore((state) => state.gameData?.round);
-  const setUserData = useGameStore((state) => state.setUserData);
   const subscribe = useGameStore((state) => state.subscribe);
-  const updateGameData = useGameStore((state) => state.updateGameData);
   const roomId = useParams().id;
-
-  const [withOne, setWithOne] = useState(true);
-
-  const allUserData = Object.values(gameData.users || {}).filter(
-    (user) => user.round === round,
+  const userCount = useGameStore(
+    (state) =>
+      Object.values(state.gameData.users || {}).filter(
+        (u) => u.round === state.gameData.round,
+      ).length,
   );
 
   useEffect(() => {
@@ -130,17 +73,6 @@ function App() {
     }
     return subscribe(roomId);
   }, [subscribe, roomId]);
-  if (!userData) {
-    return "hello";
-  }
-
-  const diceFlush =
-    userData?.dice &&
-    Object.values(diceSum(userData?.dice, false)).every((e) => e <= 1);
-  const gameDiceSum = diceSum(
-    allUserData.map(({ dice }) => dice).reduce((a, c) => a.concat(c), []),
-    withOne,
-  );
 
   return (
     <Flex
@@ -170,60 +102,9 @@ function App() {
         <Flex vertical flex={1} style={{ margin: 10 }}>
           <Card>
             <Typography.Title level={4} style={{ textAlign: "center" }}>
-              Players ready: {allUserData.length}
+              Players ready: {userCount}
             </Typography.Title>
-            <Flex align="center" vertical>
-              <List>
-                {status === "open" ? (
-                  <Flex vertical align="center">
-                    <Row
-                      justify="space-between"
-                      style={{ alignSelf: "stretch" }}
-                    >
-                      {[1, 2, 3, 4, 5, 6].map((die) => (
-                        <Col key={die}>
-                          <Flex vertical>
-                            <img src={dieImages[die]} style={{ width: 50 }} />
-                            <Typography.Text style={{ textAlign: "center" }}>
-                              {gameDiceSum[die as 1 | 2 | 3 | 4 | 5 | 6]}
-                            </Typography.Text>
-                          </Flex>
-                        </Col>
-                      ))}
-                    </Row>
-                    <Segmented
-                      options={["With One", "Without One"]}
-                      onChange={(v) => setWithOne(v === "With One")}
-                      value={["With One", "Without One"][withOne ? 0 : 1]}
-                    />
-
-                    {allUserData.map(({ dice, nickname }, index) => (
-                      <List.Item prefix={nickname} key={index}>
-                        <Row justify="center" style={{ marginLeft: 10 }}>
-                          {dice.map((die, yIndex) => (
-                            <Col
-                              key={yIndex}
-                              span={8}
-                              style={{
-                                display: "flex",
-                                alignContent: "center",
-                              }}
-                            >
-                              <img
-                                src={dieImages[die]}
-                                style={{ width: 50, margin: 5 }}
-                              />
-                            </Col>
-                          ))}
-                        </Row>
-                      </List.Item>
-                    ))}
-                  </Flex>
-                ) : (
-                  <List.Item>Running...</List.Item>
-                )}
-              </List>
-            </Flex>
+            <Gameboard />
           </Card>
         </Flex>
       </Flex>
@@ -234,77 +115,157 @@ function App() {
             boxShadow: "0px -10px 10px -10px rgba(50, 50, 50, 0.75)",
           }}
         >
-          <Flex align="center" vertical gap={10}>
-            <Typography.Title level={3}>Your dice</Typography.Title>
-            <Row>
-              {userData.round === round
-                ? userData.dice.map((die, index) => (
-                    <Col key={index}>
-                      <img src={dieImages[die]} style={{ width: 50 }} />
-                    </Col>
-                  ))
-                : null}
-            </Row>
-            {!status || status === "open" ? (
-              <Button
-                onClick={() => {
-                  updateGameData({
-                    round: round ? round + 1 : 1,
-                    status: "running",
-                  });
-                  setUserData({
-                    round: round ? round + 1 : 1,
-                    dice: rollDice(),
-                  });
-                }}
-                type="primary"
-              >
-                Start game and roll
-              </Button>
-            ) : userData.round === round ? (
-              <Space>
-                {diceFlush ? (
-                  <Button
-                    onClick={() =>
-                      setUserData({
-                        round,
-                        dice: rollDice(),
-                      })
-                    }
-                    variant="solid"
-                    color="green"
-                  >
-                    Roll
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() =>
-                      Dialog.confirm({
-                        content: "Open?",
-                        onConfirm: () => updateGameData({ status: "open" }),
-                      })
-                    }
-                    danger
-                  >
-                    Open
-                  </Button>
-                )}
-              </Space>
-            ) : (
-              <Button
-                onClick={() =>
-                  setUserData({ round: round || -1, dice: rollDice() })
-                }
-              >
-                roll
-              </Button>
-            )}
-          </Flex>
+          <PlayerHand />
         </Card>
       </Flex>
     </Flex>
   );
 }
+
+const Gameboard = () => {
+  const usersData = useGameStore((state) => state.gameData.users);
+  const round = useGameStore((state) => state.gameData?.round);
+  const status = useGameStore((state) => state.gameData?.status);
+  const [withOne, setWithOne] = useState(true);
+
+  const allUserData = Object.values(usersData || {}).filter(
+    (user) => user.round === round,
+  );
+  const gameDiceSum = diceSum(
+    allUserData.map(({ dice }) => dice).reduce((a, c) => a.concat(c), []),
+    withOne,
+  );
+
+  return (
+    <Flex align="center" vertical>
+      <List>
+        {status === "open" ? (
+          <Flex vertical align="center">
+            <Segmented
+              options={["With One", "Without One"]}
+              onChange={(v) => setWithOne(v === "With One")}
+              value={["With One", "Without One"][withOne ? 0 : 1]}
+            />
+            <Row justify="space-between" style={{ alignSelf: "stretch" }}>
+              {[1, 2, 3, 4, 5, 6].map((die) => (
+                <Col key={die}>
+                  <Flex vertical>
+                    <img src={dieImages[die]} style={{ width: 50 }} />
+                    <Typography.Text style={{ textAlign: "center" }}>
+                      {gameDiceSum[die as 1 | 2 | 3 | 4 | 5 | 6]}
+                    </Typography.Text>
+                  </Flex>
+                </Col>
+              ))}
+            </Row>
+
+            {allUserData.map(({ dice, nickname }, index) => (
+              <List.Item prefix={nickname} key={index}>
+                <Row justify="center" style={{ marginLeft: 10 }}>
+                  {dice.map((die, yIndex) => (
+                    <Col
+                      key={yIndex}
+                      span={8}
+                      style={{
+                        display: "flex",
+                        alignContent: "center",
+                      }}
+                    >
+                      <img
+                        src={dieImages[die]}
+                        style={{ width: 50, margin: 5 }}
+                      />
+                    </Col>
+                  ))}
+                </Row>
+              </List.Item>
+            ))}
+          </Flex>
+        ) : (
+          <List.Item>Running...</List.Item>
+        )}
+      </List>
+    </Flex>
+  );
+};
+
+const PlayerHand = () => {
+  const userData = useGameStore(
+    (state) => state.gameData.users?.[state.username],
+  );
+  const round = useGameStore((state) => state.gameData?.round);
+
+  return (
+    <Flex align="center" vertical gap={10}>
+      <Typography.Title level={3}>Your dice</Typography.Title>
+      <Row>
+        {userData && userData.round === round
+          ? userData.dice.map((die, index) => (
+              <Col key={index}>
+                <img src={dieImages[die]} style={{ width: 50 }} />
+              </Col>
+            ))
+          : null}
+      </Row>
+      <PlayerActions />
+    </Flex>
+  );
+};
+
+const PlayerActions = () => {
+  const userData = useGameStore(
+    (state) => state.gameData.users?.[state.username],
+  );
+  const status = useGameStore((state) => state.gameData.status);
+  const round = useGameStore((state) => state.gameData.round);
+
+  const setUserData = useGameStore((state) => state.setUserData);
+  const open = useGameStore((state) => state.open);
+  const startNew = useGameStore((state) => state.startNew);
+
+  const diceFlush =
+    userData?.dice &&
+    Object.values(diceSum(userData?.dice, false)).every((e) => e <= 1);
+
+  if (!status || status === "open") {
+    return (
+      <ActionButton
+        type="primary"
+        onClick={startNew}
+        label="Start game and roll"
+      />
+    );
+  }
+  if (!userData || userData.round !== round) {
+    return (
+      <ActionButton
+        onClick={() =>
+          setUserData({
+            round,
+            dice: rollDice(),
+          })
+        }
+        label="Join and roll"
+      />
+    );
+  }
+  if (diceFlush) {
+    return (
+      <ActionButton
+        onClick={() =>
+          setUserData({
+            round,
+            dice: rollDice(),
+          })
+        }
+        color="green"
+        label="Re-roll"
+      />
+    );
+  }
+  return <ActionButton onClick={open} color="red" label="Open" />;
+};
+
 function diceSum(dice: (1 | 2 | 3 | 4 | 5 | 6)[], withOnes: boolean) {
   return dice.reduce(
     (resultArray, item) => {
