@@ -80,10 +80,11 @@ export function createGameStore<UserGameDataType, GameSpecificActions>({
                 initialData,
                 gameId,
                 lastUpdated: serverTimestamp(),
+                round: 1
               });
               setDatabase(
                 ref(database, `room/${roomId}/users/` + get().username),
-                { round: -1 },
+                { round: 1 },
               );
             } else if (!data?.users?.[get().username]) {
               setDatabase(

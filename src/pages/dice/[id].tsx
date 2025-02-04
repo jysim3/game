@@ -1,4 +1,4 @@
-import { Card, Col, Flex, Row, Typography } from "antd";
+import { Card, Col, Flex, Row, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
 import personLogo from "../../assets/jysim.png";
 
@@ -6,6 +6,7 @@ import { List, Segmented } from "antd-mobile";
 import { useParams } from "react-router-dom";
 import { createGameStore } from "../../api/gamestore";
 import ActionButton from "../../components/ActionButton";
+import { useNicknameStore } from "../_app";
 import dieImages from "./_assets";
 
 type DieType = 1 | 2 | 3 | 4 | 5 | 6;
@@ -135,6 +136,19 @@ const Gameboard = () => {
     allUserData.map(({ dice }) => dice).reduce((a, c) => a.concat(c), []),
     withOne,
   );
+  const bonus = allUserData
+    .map(({ dice }) => new Set(dice))
+    .map((d) => {
+      if (withOne) {
+        d.delete(1);
+      }
+      return d;
+    })
+    .filter((d) => d.size === 1)
+    .reduce((a, c) => {
+      a[c.values().next().value] += 1;
+      return a;
+    }, Array(7).fill(0));
 
   return (
     <Flex align="center" vertical>
@@ -153,6 +167,7 @@ const Gameboard = () => {
                     <img src={dieImages[die]} style={{ width: 50 }} />
                     <Typography.Text style={{ textAlign: "center" }}>
                       {gameDiceSum[die as 1 | 2 | 3 | 4 | 5 | 6]}
+                      {bonus[die] ? `+${bonus[die]}` : null}
                     </Typography.Text>
                   </Flex>
                 </Col>
@@ -194,20 +209,51 @@ const PlayerHand = () => {
     (state) => state.gameData.users?.[state.username],
   );
   const round = useGameStore((state) => state.gameData?.round);
+  const [fakeDice, setDice] = useState<DieType[]>([]);
 
+  const isAdmin = useNicknameStore((state) => state.nickname === "JY");
+  const setUserData = useGameStore((state) => state.setUserData);
+  const updateDice = (dice: DieType[]) =>
+    setUserData({
+      round,
+      dice,
+    });
+  const dice = fakeDice.length > 0 ? fakeDice : userData!.dice;
   return (
     <Flex align="center" vertical gap={10}>
       <Typography.Title level={3}>Your dice</Typography.Title>
       <Row>
         {userData && userData.round === round
-          ? userData.dice.map((die, index) => (
-              <Col key={index}>
+          ? dice.map((die, index) => (
+              <Col
+                key={index}
+                onClick={() => {
+                  if (!isAdmin) {
+                    return;
+                  }
+                  dice[index] = ((dice[index] % 6) + 1) as DieType;
+                  console.log(dice);
+                  setDice([...dice]);
+                }}
+              >
                 <img src={dieImages[die]} style={{ width: 50 }} />
               </Col>
             ))
           : null}
       </Row>
       <PlayerActions />
+      {fakeDice.length > 0 ? (
+        <Space>
+          <ActionButton
+            onClick={() => {
+              updateDice(dice);
+              setDice([]);
+            }}
+            label="Send"
+          />
+          <ActionButton onClick={() => setDice([])} label="Clear" />
+        </Space>
+      ) : null}
     </Flex>
   );
 };
