@@ -1,3 +1,4 @@
+import { EditOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Flex, Input, Space, Typography } from "antd";
 import {
   Badge,
@@ -9,7 +10,7 @@ import {
   setDefaultConfig,
 } from "antd-mobile";
 import enUS from "antd-mobile/es/locales/en-US";
-import { get, query, ref } from "firebase/database";
+import { get, query, ref, remove } from "firebase/database";
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { create } from "zustand";
@@ -18,6 +19,7 @@ import { database } from "../api/firebaseConfig";
 import { GameStoreType } from "../api/gamestore";
 import personLogo from "../assets/jysim.png";
 import dieImages from "./dice/_assets";
+import kingJokerImages from "./kingjoker/_assets";
 
 type NicknameStore = {
   nickname: string;
@@ -81,6 +83,10 @@ const Layout = () => {
       });
     }
   }, [nickname, cancelDirtyNickname, confirmDirtyNickname]);
+  const location = useLocation();
+  useEffect(() => {
+    setVisible(false);
+  }, [location]);
 
   setDefaultConfig({
     locale: enUS,
@@ -114,17 +120,6 @@ const Layout = () => {
 };
 
 const NavContent = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const [rooms, setRooms] = useState<{ [id: string]: GameStoreType }>({});
-  const sortedRooms = Object.entries(rooms)
-    .map(([id, gameData]) => ({
-      ...gameData,
-      id,
-      active: location.pathname.includes(id),
-    }))
-    .sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0));
   const cancelDirtyNickname = useNicknameStore(
     (state) => state.cancelDirtyNickname,
   );
@@ -134,9 +129,23 @@ const NavContent = () => {
 
   const nickname = useNicknameStore((state) => state.nickname);
 
+  const [rooms, setRooms] = useState<{
+    [id: string]: GameStoreType<object, object>;
+  }>({});
+  const location = useLocation();
+  const sortedRooms = Object.entries(rooms)
+    .map(([id, gameData]) => ({
+      ...gameData,
+      id,
+      active: location.pathname.includes(id),
+    }))
+    .sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0));
+  const navigate = useNavigate();
   useEffect(() => {
     get(query(ref(database, "room/"))).then((snapshot) => {
-      const data = snapshot.val();
+      const data = snapshot.val() as {
+        [id: string]: GameStoreType<object, object>;
+      };
       setRooms(data);
     });
   }, []);
@@ -145,43 +154,105 @@ const NavContent = () => {
     <Flex vertical style={{ backgroundColor: "#eee" }}>
       <Typography.Title style={{ margin: 10 }}>jysim3.com</Typography.Title>
       <Typography.Title style={{ textAlign: "center" }} level={4}>
-        Your name: {nickname}
+        Your name: {nickname}{" "}
+        <Button
+          type="primary"
+          style={{ margin: 10 }}
+          icon={<EditOutlined />}
+          onClick={() =>
+            Dialog.confirm({
+              content: <EditNickname />,
+              onConfirm: () => confirmDirtyNickname(),
+              onCancel: () => cancelDirtyNickname(),
+            })
+          }
+        />
       </Typography.Title>
       <Button
-        type="primary"
+        icon={<ReloadOutlined />}
         style={{ margin: 10 }}
         onClick={() =>
-          Dialog.confirm({
-            content: <EditNickname />,
-            onConfirm: () => confirmDirtyNickname(),
-            onCancel: () => cancelDirtyNickname(),
+          get(query(ref(database, "room/"))).then((snapshot) => {
+            const data = snapshot.val() as {
+              [id: string]: GameStoreType<object, object>;
+            };
+            setRooms(data);
           })
         }
       >
-        Edit name
+        Refresh
       </Button>
-      <List
-        header={
-          <Space>
-            <img style={{ width: 30 }} src={dieImages[6]} />
-            Dice game
-          </Space>
+      <GameSection
+        rooms={sortedRooms}
+        gameId="dice"
+        label="Dice game"
+        icon={dieImages[6]}
+      />
+      <GameSection
+        rooms={sortedRooms}
+        gameId="kingjoker"
+        label="King Joker"
+        icon={kingJokerImages["K"]}
+      />
+      <Button
+        type="primary"
+        danger
+        style={{ margin: 10 }}
+        onClick={() =>
+          Dialog.confirm({
+            content: "Remove all rooms?",
+            onConfirm: () => {
+              remove(ref(database, "room/"));
+              navigate("/");
+            },
+          })
         }
-        mode="card"
       >
-        <List.Item onClick={() => navigate("/dice/")}>Create new</List.Item>
-        {sortedRooms
-          .filter(({ gameId }) => gameId === "dice")
-          .map(({ id, active }: { id: string; active: boolean }) => (
-            <List.Item onClick={() => navigate(`/dice/${id}`)} key={id}>
-              {id.toUpperCase()}{" "}
-              {active ? <Badge content="current" color="green" /> : null}
-            </List.Item>
-          ))}
-      </List>
+        Clear rooms
+      </Button>
     </Flex>
   );
 };
+
+const GameSection = ({
+  gameId,
+  label,
+  icon,
+  rooms,
+}: {
+  icon: string;
+  label: string;
+  gameId: string;
+  rooms: (GameStoreType<object, object> & {
+    gameId: string;
+    active: boolean;
+    id: string;
+  })[];
+}) => {
+  const navigate = useNavigate();
+  return (
+    <List
+      header={
+        <Space>
+          <img style={{ width: 30 }} src={icon} />
+          {label}
+        </Space>
+      }
+      mode="card"
+    >
+      <List.Item onClick={() => navigate(`/${gameId}/`)}>Create new</List.Item>
+      {rooms
+        .filter(({ gameId: roomGameId }) => gameId === roomGameId)
+        .map(({ id, active }: { id: string; active: boolean }) => (
+          <List.Item onClick={() => navigate(`/${gameId}/${id}`)} key={id}>
+            {id.toUpperCase()}{" "}
+            {active ? <Badge content="current" color="green" /> : null}
+          </List.Item>
+        ))}
+    </List>
+  );
+};
+
 const EditNickname = () => {
   const setDirtyNickname = useNicknameStore((state) => state.setDirtyNickname);
   const dirtyNickname = useNicknameStore((state) => state.dirtyNickname);

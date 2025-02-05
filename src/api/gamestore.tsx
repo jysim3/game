@@ -11,27 +11,38 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { useNicknameStore } from "../pages/_app";
 import { database } from "./firebaseConfig";
 
-export type GameStoreType<T = object> = {
+export type GameStoreType<GameSpecificDataType, T> = {
   username: string;
   roomId: string;
   lastUpdated: number;
   gameId: string;
-  gameData: GameDataType<T>;
+  gameData: GenericGameDataType<GameSpecificDataType, T>;
 };
 
-type GameDataType<T> = {
+type GenericGameDataType<GameSpecificDataType, T> = {
   status: string;
   round: number;
   users?: { [username: string]: T };
-};
+} & GameSpecificDataType;
 
-export type GameActions<UserGameDataType, GameSpecificActions> = {
+export type GameActions<
+  GameSpecificDataType,
+  UserGameDataType,
+  GameSpecificActions,
+> = {
   setUserData: (data: UserGameDataType) => void;
-  updateGameData: (data: Partial<GameDataType<UserGameDataType>>) => void;
+  updateUserData: (data: Partial<UserGameDataType>) => void;
+  updateGameData: (
+    data: Partial<GenericGameDataType<GameSpecificDataType, UserGameDataType>>,
+  ) => void;
   subscribe: (roomId: string) => Unsubscribe;
 } & GameSpecificActions;
 
-export function createGameStore<UserGameDataType, GameSpecificActions>({
+export function createGameStore<
+  GameSpecificDataType,
+  UserGameDataType,
+  GameSpecificActions,
+>({
   gameId,
   initialData,
   actions,
@@ -39,17 +50,17 @@ export function createGameStore<UserGameDataType, GameSpecificActions>({
   gameId: string;
   actions: (
     set: StoreApi<
-      GameStoreType<UserGameDataType> &
-        GameActions<UserGameDataType, GameSpecificActions>
+      GameStoreType<GameSpecificDataType, UserGameDataType> &
+        GameActions<GameSpecificDataType, UserGameDataType, GameSpecificActions>
     >["setState"],
-    get: () => GameStoreType<UserGameDataType> &
-      GameActions<UserGameDataType, GameSpecificActions>,
+    get: () => GameStoreType<GameSpecificDataType, UserGameDataType> &
+      GameActions<GameSpecificDataType, UserGameDataType, GameSpecificActions>,
   ) => GameSpecificActions;
-  initialData: GameDataType<UserGameDataType>;
+  initialData: GenericGameDataType<GameSpecificDataType, UserGameDataType>;
 }) {
   return create<
-    GameStoreType<UserGameDataType> &
-      GameActions<UserGameDataType, GameSpecificActions>
+    GameStoreType<GameSpecificDataType, UserGameDataType> &
+      GameActions<GameSpecificDataType, UserGameDataType, GameSpecificActions>
   >()(
     persist(
       (set, get) => ({
@@ -61,6 +72,16 @@ export function createGameStore<UserGameDataType, GameSpecificActions>({
         username: useNicknameStore.getState().username,
         roomId: "",
 
+        updateUserData: (data) =>
+          get().roomId
+            ? updateDatabase(
+                ref(database, `room/${get().roomId}/users/` + get().username),
+                {
+                  ...data,
+                  nickname: useNicknameStore.getState().nickname,
+                },
+              )
+            : null,
         setUserData: (data) =>
           get().roomId
             ? setDatabase(
@@ -77,7 +98,7 @@ export function createGameStore<UserGameDataType, GameSpecificActions>({
             const data = snapshot.val() || {};
             if (!data.round) {
               updateDatabase(ref(database, `room/${roomId}`), {
-                initialData,
+                ...initialData,
                 gameId,
                 lastUpdated: serverTimestamp(),
                 round: 1
@@ -102,10 +123,10 @@ export function createGameStore<UserGameDataType, GameSpecificActions>({
             gameId,
             lastUpdated: serverTimestamp(),
           }),
-        ...actions(set,get),
+        ...actions(set, get),
       }),
       {
-        name: "gameData", // name of the item in the storage (must be unique)
+        name:gameId, // name of the item in the storage (must be unique)
         storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
       },
     ),

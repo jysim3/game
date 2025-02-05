@@ -6,7 +6,6 @@ import { List, Segmented } from "antd-mobile";
 import { useParams } from "react-router-dom";
 import { createGameStore } from "../../api/gamestore";
 import ActionButton from "../../components/ActionButton";
-import { useNicknameStore } from "../_app";
 import dieImages from "./_assets";
 
 type DieType = 1 | 2 | 3 | 4 | 5 | 6;
@@ -30,7 +29,7 @@ const rollDice = () => {
     .map((x) => Math.round(x) as 1 | 2 | 3 | 4 | 5 | 6);
 };
 
-const useGameStore = createGameStore<UserDiceType, DiceGameActions>({
+const useGameStore = createGameStore<object, UserDiceType, DiceGameActions>({
   gameId: "dice",
   initialData: { status: "open", round: 0, users: {} },
   actions: (_, get) => ({
@@ -146,7 +145,7 @@ const Gameboard = () => {
     })
     .filter((d) => d.size === 1)
     .reduce((a, c) => {
-      a[c.values().next().value] += 1;
+      a[c.values().next().value!] += 1;
       return a;
     }, Array(7).fill(0));
 
@@ -177,7 +176,7 @@ const Gameboard = () => {
             {allUserData.map(({ dice, nickname }, index) => (
               <List.Item prefix={nickname} key={index}>
                 <Row justify="center" style={{ marginLeft: 10 }}>
-                  {dice.map((die, yIndex) => (
+                  {dice?.map((die, yIndex) => (
                     <Col
                       key={yIndex}
                       span={8}
@@ -211,19 +210,22 @@ const PlayerHand = () => {
   const round = useGameStore((state) => state.gameData?.round);
   const [fakeDice, setDice] = useState<DieType[]>([]);
 
-  const isAdmin = useNicknameStore((state) => state.nickname === "JY");
+  const isAdmin = userData?.nickname === "JY";
   const setUserData = useGameStore((state) => state.setUserData);
   const updateDice = (dice: DieType[]) =>
     setUserData({
       round,
       dice,
     });
-  const dice = fakeDice.length > 0 ? fakeDice : userData!.dice;
+  if (!userData) {
+    return null;
+  }
+  const dice = fakeDice.length > 0 ? fakeDice : userData.dice;
   return (
     <Flex align="center" vertical gap={10}>
       <Typography.Title level={3}>Your dice</Typography.Title>
       <Row>
-        {userData && userData.round === round
+        {userData && userData.round === round && dice
           ? dice.map((die, index) => (
               <Col
                 key={index}
