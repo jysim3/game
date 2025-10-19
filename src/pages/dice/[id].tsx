@@ -25,8 +25,8 @@ type DiceGameActions = {
 const rollDice = () => {
   return Array(5)
     .fill(0)
-    .map(() => Math.random() * 5 + 1)
-    .map((x) => Math.round(x) as 1 | 2 | 3 | 4 | 5 | 6);
+    .map(() => Math.random() * 6 + 1)
+    .map((x) => Math.floor(x) as 1 | 2 | 3 | 4 | 5 | 6);
 };
 
 const useGameStore = createGameStore<object, UserDiceType, DiceGameActions>({
