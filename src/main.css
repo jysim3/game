@@ -54,6 +54,59 @@ body {
   box-sizing: border-box;
 }
 
+/* Generic page spacing */
+.page {
+  padding: 14px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--app-border);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
+}
+
+.page-title {
+  margin: 0;
+}
+
+.page-subtitle {
+  color: var(--app-text-muted);
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  padding: 12px;
+  border-top: 1px solid var(--app-border);
+  background: rgba(12, 18, 32, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dice-grid {
+  width: 100%;
+}
+
+.dice-tile {
+  padding: 10px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dice-tile-count {
+  text-align: center;
+  font-weight: 600;
+}
+
 .app-card {
   border: 1px solid var(--app-border);
   background: var(--app-surface);

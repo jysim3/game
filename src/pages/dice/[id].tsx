@@ -1,6 +1,5 @@
-import { Card, Col, Flex, Row, Space, Typography } from "antd";
-import { useEffect, useState } from "react";
-import personLogo from "../../assets/jysim.png";
+import { Card, Col, Divider, Flex, Row, Space, Typography } from "antd";
+import { useEffect, useMemo, useState } from "react";
 
 import { List, Segmented } from "antd-mobile";
 import { useLocation, useParams } from "react-router-dom";
@@ -76,50 +75,35 @@ function App() {
     return subscribe(roomId);
   }, [subscribe, roomId, location.pathname]);
 
-  return (
-    <Flex
-      vertical
-      flex={1}
-      style={{ backgroundColor: "#eee", overflow: "scroll" }}
-    >
-      <Flex
-        vertical
-        gap={10}
-        flex={1}
-        style={{ backgroundColor: "#eee", overflow: "scroll" }}
-      >
-        <Flex vertical>
-          <Flex justify="center">
-            <a
-              href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-              target="_blank"
-            >
-              <img src={personLogo} style={{ width: 100 }} />
-            </a>
-          </Flex>
-          <Typography.Title style={{ textAlign: "center" }}>
-            Dice v2.0
-          </Typography.Title>
-        </Flex>
-        <Flex vertical flex={1} style={{ margin: 10 }}>
-          <Card>
-            <Typography.Title level={4} style={{ textAlign: "center" }}>
-              Players ready: {userCount}
-            </Typography.Title>
-            <Gameboard />
-          </Card>
-        </Flex>
-      </Flex>
+  const roomLabel = useMemo(
+    () => (roomId ? roomId.toUpperCase() : ""),
+    [roomId],
+  );
 
-      <Flex vertical>
-        <Card
-          style={{
-            boxShadow: "0px -10px 10px -10px rgba(50, 50, 50, 0.75)",
-          }}
-        >
+  return (
+    <Flex vertical flex={1} style={{ overflow: "auto" }}>
+      <div className="page-header">
+        <div>
+          <Typography.Title className="page-title" level={3}>
+            Dice
+          </Typography.Title>
+          <div className="page-subtitle">Room: {roomLabel}</div>
+        </div>
+
+        <div className="page-subtitle">Players ready: {userCount}</div>
+      </div>
+
+      <div className="page">
+        <Card styles={{ body: { padding: 14 } }}>
+          <Gameboard />
+        </Card>
+      </div>
+
+      <div className="sticky-bottom">
+        <Card styles={{ body: { padding: 14 } }}>
           <PlayerHand />
         </Card>
-      </Flex>
+      </div>
     </Flex>
   );
 }
@@ -152,54 +136,65 @@ const Gameboard = () => {
     }, Array(7).fill(0));
 
   return (
-    <Flex align="center" vertical>
+    <Flex vertical gap={12}>
+      <Flex justify="space-between" align="center" wrap>
+        <div>
+          <Typography.Title level={5} style={{ margin: 0 }}>
+            Lobby
+          </Typography.Title>
+          <div className="page-subtitle">
+            Configure whether 1 counts as a wildcard for 2–6
+          </div>
+        </div>
+        <Segmented
+          options={["With One", "Without One"]}
+          onChange={(v) => setWithOne(v === "With One")}
+          value={["With One", "Without One"][withOne ? 0 : 1]}
+        />
+      </Flex>
+
+      {status !== "open" ? (
+        <Card styles={{ body: { padding: 12 } }}>
+          <Typography.Text className="page-subtitle">Game running…</Typography.Text>
+        </Card>
+      ) : null}
+
+      <div className="dice-grid">
+        <Row gutter={[10, 10]} justify="space-between">
+          {[1, 2, 3, 4, 5, 6].map((die) => (
+            <Col key={die} flex="1 1 90px">
+              <div className="dice-tile">
+                <Flex vertical align="center" gap={6}>
+                  <img src={dieImages[die]} style={{ width: 42, height: 42 }} />
+                  <div className="dice-tile-count">
+                    {gameDiceSum[die as 1 | 2 | 3 | 4 | 5 | 6]}
+                    {bonus[die] ? `+${bonus[die]}` : null}
+                  </div>
+                </Flex>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      </div>
+
+      <Divider style={{ margin: "4px 0" }} />
+
+      <Typography.Title level={5} style={{ margin: 0 }}>
+        Players
+      </Typography.Title>
+
       <List>
-        {status === "open" ? (
-          <Flex vertical align="center">
-            <Segmented
-              options={["With One", "Without One"]}
-              onChange={(v) => setWithOne(v === "With One")}
-              value={["With One", "Without One"][withOne ? 0 : 1]}
-            />
-            <Row justify="space-between" style={{ alignSelf: "stretch" }}>
-              {[1, 2, 3, 4, 5, 6].map((die) => (
-                <Col key={die}>
-                  <Flex vertical>
-                    <img src={dieImages[die]} style={{ width: 50 }} />
-                    <Typography.Text style={{ textAlign: "center" }}>
-                      {gameDiceSum[die as 1 | 2 | 3 | 4 | 5 | 6]}
-                      {bonus[die] ? `+${bonus[die]}` : null}
-                    </Typography.Text>
-                  </Flex>
+        {allUserData.map(({ dice, nickname }, index) => (
+          <List.Item prefix={nickname || "(anon)"} key={index}>
+            <Row justify="center" style={{ marginLeft: 10 }}>
+              {dice?.map((die, yIndex) => (
+                <Col key={yIndex} span={8} style={{ display: "flex" }}>
+                  <img src={dieImages[die]} style={{ width: 46, margin: 4 }} />
                 </Col>
               ))}
             </Row>
-
-            {allUserData.map(({ dice, nickname }, index) => (
-              <List.Item prefix={nickname} key={index}>
-                <Row justify="center" style={{ marginLeft: 10 }}>
-                  {dice?.map((die, yIndex) => (
-                    <Col
-                      key={yIndex}
-                      span={8}
-                      style={{
-                        display: "flex",
-                        alignContent: "center",
-                      }}
-                    >
-                      <img
-                        src={dieImages[die]}
-                        style={{ width: 50, margin: 5 }}
-                      />
-                    </Col>
-                  ))}
-                </Row>
-              </List.Item>
-            ))}
-          </Flex>
-        ) : (
-          <List.Item>Running...</List.Item>
-        )}
+          </List.Item>
+        ))}
       </List>
     </Flex>
   );
