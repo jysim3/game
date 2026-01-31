@@ -174,7 +174,12 @@ a {
 }
 
 .nav-drawer .adm-list-item-content-main {
-  color: var(--app-text);
+  color: var(--app-text) !important;
+}
+
+/* Some antd-mobile builds apply color on the wrapper; ensure it inherits correctly */
+.nav-drawer .adm-list-item-content {
+  color: var(--app-text) !important;
 }
 
 .nav-drawer .adm-list-item-content-extra {
