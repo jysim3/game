@@ -155,10 +155,13 @@ a {
 }
 
 /* antd-mobile List uses CSS variables; override inside drawer */
-.nav-drawer .adm-list {
+.nav-drawer {
   --adm-color-text: var(--app-text);
   --adm-color-text-secondary: var(--app-text-muted);
   --adm-color-border: rgba(255, 255, 255, 0.14);
+}
+
+.nav-drawer .adm-list {
   background: transparent;
 }
 
@@ -167,6 +170,14 @@ a {
 }
 
 .nav-drawer .adm-list-item-content-prefix {
+  color: var(--app-text-muted);
+}
+
+.nav-drawer .adm-list-item-content-main {
+  color: var(--app-text);
+}
+
+.nav-drawer .adm-list-item-content-extra {
   color: var(--app-text-muted);
 }
 
