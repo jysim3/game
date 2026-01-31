@@ -64,6 +64,9 @@ export const useNicknameStore = create<NicknameStore>()(
   ),
 );
 
+const CLEANUP_EVERY_MS = 1000 * 60 * 60 * 24; // 24 hours
+const CLEANUP_KEY = "jysim3:lastRoomCleanupMs";
+
 const Layout = () => {
   const [visible, setVisible] = useState(false);
 
@@ -74,6 +77,20 @@ const Layout = () => {
     (state) => state.confirmDirtyNickname,
   );
   const nickname = useNicknameStore((state) => state.nickname);
+
+  // Client-side cleanup: wipe all rooms occasionally (single-user site).
+  useEffect(() => {
+    try {
+      const last = Number(localStorage.getItem(CLEANUP_KEY) || "0");
+      if (Date.now() - last > CLEANUP_EVERY_MS) {
+        localStorage.setItem(CLEANUP_KEY, String(Date.now()));
+        remove(ref(database, "room/"));
+      }
+    } catch {
+      // Ignore cleanup failures; it's non-critical.
+    }
+  }, []);
+
   useEffect(() => {
     if (!nickname) {
       Dialog.confirm({
