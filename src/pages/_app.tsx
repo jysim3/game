@@ -136,7 +136,10 @@ const Layout = () => {
             <NavContent />
           </Popup>
 
-          <Outlet />
+          {/* Allow child pages to own scrolling */}
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <Outlet />
+          </div>
         </div>
       </div>
     </ConfigProvider>

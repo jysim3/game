@@ -150,11 +150,26 @@ body {
 .app-card {
   border: 1px solid var(--app-border);
   background: var(--app-surface);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border-radius: 18px;
   box-shadow: var(--app-shadow);
-  overflow: hidden;
+
+  /* Important for mobile layouts:
+     - avoid backdrop-filter on the main container because it can break
+       `position: fixed` descendants (they may become relative to the card)
+     - avoid overflow clipping so fixed elements / scroll areas behave normally
+  */
+  overflow: visible;
+
+  display: flex;
+  flex-direction: column;
+  /* Use dynamic viewport height on mobile to avoid URL bar jump */
+  height: calc(100dvh - 32px);
+}
+
+@supports not (height: 100dvh) {
+  .app-card {
+    height: calc(100vh - 32px);
+  }
 }
 
 .app-navbar {
