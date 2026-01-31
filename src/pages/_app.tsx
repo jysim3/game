@@ -18,8 +18,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { database } from "../api/firebaseConfig";
 import { GameStoreType } from "../api/gamestore";
 import personLogo from "../assets/jysim.png";
-import dieImages from "./dice/_assets";
-import kingJokerImages from "./kingjoker/_assets";
+import dieImages from "./app/dice/_assets";
+import kingJokerImages from "./app/kingjoker/_assets";
 
 type NicknameStore = {
   nickname: string;
@@ -210,12 +210,14 @@ const NavContent = () => {
       </Button>
       <GameSection
         rooms={sortedRooms}
+        basePath="/app/dice"
         gameId="dice"
         label="Dice game"
         icon={dieImages[6]}
       />
       <GameSection
         rooms={sortedRooms}
+        basePath="/app/kingjoker"
         gameId="kingjoker"
         label="King Joker"
         icon={kingJokerImages["K"]}
@@ -245,10 +247,12 @@ const GameSection = ({
   label,
   icon,
   rooms,
+  basePath,
 }: {
   icon: string;
   label: string;
   gameId: string;
+  basePath: string;
   rooms: (GameStoreType<object, object> & {
     gameId: string;
     active: boolean;
@@ -266,11 +270,11 @@ const GameSection = ({
       }
       mode="card"
     >
-      <List.Item onClick={() => navigate(`/${gameId}/`)}>Create new</List.Item>
+      <List.Item onClick={() => navigate(`${basePath}/`)}>Create new</List.Item>
       {rooms
         .filter(({ gameId: roomGameId }) => gameId === roomGameId)
         .map(({ id, active }: { id: string; active: boolean }) => (
-          <List.Item onClick={() => navigate(`/${gameId}/${id}`)} key={id}>
+          <List.Item onClick={() => navigate(`${basePath}/${id}`)} key={id}>
             {id.toUpperCase()}{" "}
             {active ? <Badge content="current" color="green" /> : null}
           </List.Item>

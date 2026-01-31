@@ -1,11 +1,11 @@
 import { Card, Flex, Typography } from "antd";
 import { useEffect, useState } from "react";
-import personLogo from "../../assets/jysim.png";
+import personLogo from "../../../assets/jysim.png";
 
 import { List } from "antd-mobile";
 import { useLocation, useParams } from "react-router-dom";
-import { createGameStore } from "../../api/gamestore";
-import ActionButton from "../../components/ActionButton";
+import { createGameStore } from "../../../api/gamestore";
+import ActionButton from "../../../components/ActionButton";
 import icons from "./_assets";
 
 type CardType = "J" | "K" | "N";

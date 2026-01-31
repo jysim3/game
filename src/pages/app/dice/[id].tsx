@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { List, Segmented } from "antd-mobile";
 import { useLocation, useParams } from "react-router-dom";
-import { createGameStore } from "../../api/gamestore";
-import ActionButton from "../../components/ActionButton";
+import { createGameStore } from "../../../api/gamestore";
+import ActionButton from "../../../components/ActionButton";
 import dieImages from "./_assets";
 
 type DieType = 1 | 2 | 3 | 4 | 5 | 6;
