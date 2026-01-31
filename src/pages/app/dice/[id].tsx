@@ -117,23 +117,34 @@ const Gameboard = () => {
   const allUserData = Object.values(usersData || {}).filter(
     (user) => user.round === round,
   );
-  const gameDiceSum = diceSum(
-    allUserData.map(({ dice }) => dice).reduce((a, c) => a.concat(c), []),
-    withOne,
-  );
-  const bonus = allUserData
-    .map(({ dice }) => new Set(dice))
-    .map((d) => {
-      if (withOne) {
-        d.delete(1);
-      }
-      return d;
-    })
-    .filter((d) => d.size === 1)
-    .reduce((a, c) => {
-      a[c.values().next().value!] += 1;
-      return a;
-    }, Array(7).fill(0));
+  // IMPORTANT: don't compute totals while bidding is in progress.
+  // (Liar's Dice style: numbers are only counted once the room is opened/revealed.)
+  const gameDiceSum =
+    status === "open"
+      ? diceSum(
+          allUserData
+            .map(({ dice }) => dice)
+            .reduce((a, c) => a.concat(c), []),
+          withOne,
+        )
+      : ({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } as const);
+
+  const bonus =
+    status === "open"
+      ? allUserData
+          .map(({ dice }) => new Set(dice))
+          .map((d) => {
+            if (withOne) {
+              d.delete(1);
+            }
+            return d;
+          })
+          .filter((d) => d.size === 1)
+          .reduce((a, c) => {
+            a[c.values().next().value!] += 1;
+            return a;
+          }, Array(7).fill(0))
+      : Array(7).fill(0);
 
   return (
     <Flex vertical gap={12}>
@@ -155,47 +166,60 @@ const Gameboard = () => {
 
       {status !== "open" ? (
         <Card styles={{ body: { padding: 12 } }}>
-          <Typography.Text className="page-subtitle">Game running…</Typography.Text>
+          <Typography.Title level={5} style={{ margin: 0 }}>
+            Bidding in progress
+          </Typography.Title>
+          <Typography.Text className="page-subtitle">
+            Totals stay hidden until someone presses “Open” to reveal.
+          </Typography.Text>
         </Card>
-      ) : null}
-
-      <div className="dice-grid">
-        <Row gutter={[10, 10]} justify="space-between">
-          {[1, 2, 3, 4, 5, 6].map((die) => (
-            <Col key={die} flex="1 1 90px">
-              <div className="dice-tile">
-                <Flex vertical align="center" gap={6}>
-                  <img src={dieImages[die]} style={{ width: 42, height: 42 }} />
-                  <div className="dice-tile-count">
-                    {gameDiceSum[die as 1 | 2 | 3 | 4 | 5 | 6]}
-                    {bonus[die] ? `+${bonus[die]}` : null}
+      ) : (
+        <>
+          <div className="dice-grid">
+            <Row gutter={[10, 10]} justify="space-between">
+              {[1, 2, 3, 4, 5, 6].map((die) => (
+                <Col key={die} flex="1 1 90px">
+                  <div className="dice-tile">
+                    <Flex vertical align="center" gap={6}>
+                      <img
+                        src={dieImages[die]}
+                        style={{ width: 42, height: 42 }}
+                      />
+                      <div className="dice-tile-count">
+                        {gameDiceSum[die as 1 | 2 | 3 | 4 | 5 | 6]}
+                        {bonus[die] ? `+${bonus[die]}` : null}
+                      </div>
+                    </Flex>
                   </div>
-                </Flex>
-              </div>
-            </Col>
-          ))}
-        </Row>
-      </div>
-
-      <Divider style={{ margin: "4px 0" }} />
-
-      <Typography.Title level={5} style={{ margin: 0 }}>
-        Players
-      </Typography.Title>
-
-      <List>
-        {allUserData.map(({ dice, nickname }, index) => (
-          <List.Item prefix={nickname || "(anon)"} key={index}>
-            <Row justify="center" style={{ marginLeft: 10 }}>
-              {dice?.map((die, yIndex) => (
-                <Col key={yIndex} span={8} style={{ display: "flex" }}>
-                  <img src={dieImages[die]} style={{ width: 46, margin: 4 }} />
                 </Col>
               ))}
             </Row>
-          </List.Item>
-        ))}
-      </List>
+          </div>
+
+          <Divider style={{ margin: "4px 0" }} />
+
+          <Typography.Title level={5} style={{ margin: 0 }}>
+            Players
+          </Typography.Title>
+
+          <List>
+            {allUserData.map(({ dice, nickname }, index) => (
+              <List.Item prefix={nickname || "(anon)"} key={index}>
+                <Row justify="center" style={{ marginLeft: 10 }}>
+                  {dice?.map((die, yIndex) => (
+                    <Col key={yIndex} span={8} style={{ display: "flex" }}>
+                      <img
+                        src={dieImages[die]}
+                        style={{ width: 46, margin: 4 }}
+                      />
+                    </Col>
+                  ))}
+                </Row>
+              </List.Item>
+            ))}
+          </List>
+        </>
+      )}
     </Flex>
   );
 };
