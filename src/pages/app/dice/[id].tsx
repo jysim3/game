@@ -81,7 +81,8 @@ function App() {
   );
 
   return (
-    <Flex vertical flex={1} style={{ overflow: "auto" }}>
+    // Important: allow inner scroll area to actually scroll (minHeight: 0 in flex layouts).
+    <Flex vertical flex={1} style={{ minHeight: 0 }}>
       <div className="page-header">
         <div>
           <Typography.Title className="page-title" level={3}>
@@ -93,15 +94,22 @@ function App() {
         <div className="page-subtitle">Players ready: {userCount}</div>
       </div>
 
-      <div className="page page-with-footer">
-        <Card styles={{ body: { padding: 12 } }}>
-          <Gameboard />
-        </Card>
+      {/* Scrollable main content */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <div className="page">
+          <Card styles={{ body: { padding: 12 } }}>
+            <Gameboard />
+          </Card>
+        </div>
+
+        {/* Spacer so the fixed bottom bar doesn't cover the last content */}
+        <div className="fixed-bottom-spacer" />
       </div>
 
+      {/* Fixed-to-viewport bottom bar */}
       <div className="fixed-bottom">
         <div className="fixed-bottom-inner">
-          <Card styles={{ body: { padding: 12 } }}>
+          <Card>
             <PlayerHand />
           </Card>
         </div>

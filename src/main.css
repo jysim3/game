@@ -112,8 +112,14 @@ body {
   margin: 0 auto;
 }
 
-.page-with-footer {
-  padding-bottom: 170px; /* space so content isn't hidden behind fixed bar */
+/* Reserve space inside scroll area so fixed footer doesn't cover content */
+.fixed-bottom-spacer {
+  height: 170px;
+}
+
+/* Keep the bottom panel compact (avoid it becoming a scrollable page itself) */
+.fixed-bottom .ant-card-body {
+  padding: 12px;
 }
 
 /* Compact reveal layout */
