@@ -94,27 +94,34 @@ const Layout = () => {
 
   return (
     <ConfigProvider locale={enUS}>
-      <NavBar
-        onBack={() => setVisible(true)}
-        style={{ height: 60, margin: 15 }}
-      >
-        <Flex justify="center">
-          <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">
-            <img src={personLogo} style={{ width: 50 }} alt="Person logo" />
-          </a>
-        </Flex>
-      </NavBar>
-      <Popup
-        visible={visible}
-        onMaskClick={() => {
-          setVisible(false);
-        }}
-        position="left"
-        bodyStyle={{ width: "60vw" }}
-      >
-        <NavContent />
-      </Popup>
-      <Outlet />
+      <div className="app-shell">
+        <div className="app-card">
+          <NavBar onBack={() => setVisible(true)} className="app-navbar">
+            <Flex justify="center">
+              <a
+                href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img src={personLogo} className="app-logo" alt="Person logo" />
+              </a>
+            </Flex>
+          </NavBar>
+
+          <Popup
+            visible={visible}
+            onMaskClick={() => {
+              setVisible(false);
+            }}
+            position="left"
+            bodyStyle={{ width: "60vw" }}
+          >
+            <NavContent />
+          </Popup>
+
+          <Outlet />
+        </div>
+      </div>
     </ConfigProvider>
   );
 };
@@ -151,9 +158,11 @@ const NavContent = () => {
   }, []);
 
   return (
-    <Flex vertical style={{ backgroundColor: "#eee" }}>
-      <Typography.Title style={{ margin: 10 }}>jysim3.com</Typography.Title>
-      <Typography.Title style={{ textAlign: "center" }} level={4}>
+    <Flex vertical style={{ padding: 12 }}>
+      <Typography.Title style={{ margin: 0, padding: "12px 10px" }}>
+        jysim3.com
+      </Typography.Title>
+      <Typography.Title style={{ textAlign: "center", marginTop: 8 }} level={4}>
         Your name: {nickname}{" "}
         <Button
           type="primary"
@@ -170,7 +179,7 @@ const NavContent = () => {
       </Typography.Title>
       <Button
         icon={<ReloadOutlined />}
-        style={{ margin: 10 }}
+        style={{ margin: "8px 10px 10px" }}
         onClick={() =>
           get(query(ref(database, "room/"))).then((snapshot) => {
             const data = snapshot.val() as {
