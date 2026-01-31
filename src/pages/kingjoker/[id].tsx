@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import personLogo from "../../assets/jysim.png";
 
 import { List } from "antd-mobile";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { createGameStore } from "../../api/gamestore";
 import ActionButton from "../../components/ActionButton";
 import icons from "./_assets";
@@ -122,14 +122,16 @@ const useGameStore = createGameStore<
 
 function App() {
   const subscribe = useGameStore((state) => state.subscribe);
+  const location = useLocation();
   const roomId = useParams().id;
 
   useEffect(() => {
     if (!roomId) {
       return;
     }
+    sessionStorage.setItem("lastRoomPath", location.pathname);
     return subscribe(roomId);
-  }, [subscribe, roomId]);
+  }, [subscribe, roomId, location.pathname]);
 
   return (
     <Flex
