@@ -158,7 +158,7 @@ const NavContent = () => {
   }, []);
 
   return (
-    <Flex vertical style={{ padding: 12 }}>
+    <Flex vertical className="nav-drawer">
       <Typography.Title style={{ margin: 0, padding: "12px 10px" }}>
         jysim3.com
       </Typography.Title>

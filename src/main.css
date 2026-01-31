@@ -140,6 +140,36 @@ a {
   color: inherit;
 }
 
+/* Drawer (Popup) styling for dark theme */
+.nav-drawer {
+  width: 100%;
+  min-height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  color: var(--app-text);
+  background: rgba(12, 18, 32, 0.92);
+}
+
+.nav-drawer .ant-typography {
+  color: var(--app-text);
+}
+
+/* antd-mobile List uses CSS variables; override inside drawer */
+.nav-drawer .adm-list {
+  --adm-color-text: var(--app-text);
+  --adm-color-text-secondary: var(--app-text-muted);
+  --adm-color-border: rgba(255, 255, 255, 0.14);
+  background: transparent;
+}
+
+.nav-drawer .adm-list-header {
+  color: var(--app-text-muted);
+}
+
+.nav-drawer .adm-list-item-content-prefix {
+  color: var(--app-text-muted);
+}
+
 .adm-list-item-content-prefix {
   max-width: 6rem;
   overflow: hidden;
