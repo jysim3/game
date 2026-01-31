@@ -91,6 +91,40 @@ body {
   -webkit-backdrop-filter: blur(10px);
 }
 
+/* Fixed bottom bar (sticks to viewport bottom on mobile) */
+.fixed-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--app-border);
+  background: rgba(12, 18, 32, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 50;
+}
+
+.fixed-bottom-inner {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.page-with-footer {
+  padding-bottom: 170px; /* space so content isn't hidden behind fixed bar */
+}
+
+/* Compact reveal layout */
+.reveal-compact {
+  gap: 10px;
+}
+
+.reveal-compact .dice-tile {
+  padding: 8px 6px;
+}
+
 .dice-grid {
   width: 100%;
 }

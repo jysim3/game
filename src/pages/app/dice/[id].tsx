@@ -93,16 +93,18 @@ function App() {
         <div className="page-subtitle">Players ready: {userCount}</div>
       </div>
 
-      <div className="page">
-        <Card styles={{ body: { padding: 14 } }}>
+      <div className="page page-with-footer">
+        <Card styles={{ body: { padding: 12 } }}>
           <Gameboard />
         </Card>
       </div>
 
-      <div className="sticky-bottom">
-        <Card styles={{ body: { padding: 14 } }}>
-          <PlayerHand />
-        </Card>
+      <div className="fixed-bottom">
+        <div className="fixed-bottom-inner">
+          <Card styles={{ body: { padding: 12 } }}>
+            <PlayerHand />
+          </Card>
+        </div>
       </div>
     </Flex>
   );
@@ -175,15 +177,15 @@ const Gameboard = () => {
         </Card>
       ) : (
         <>
-          <div className="dice-grid">
-            <Row gutter={[10, 10]} justify="space-between">
+          <div className="dice-grid reveal-compact">
+            <Row gutter={[8, 8]} justify="space-between">
               {[1, 2, 3, 4, 5, 6].map((die) => (
                 <Col key={die} flex="1 1 90px">
                   <div className="dice-tile">
                     <Flex vertical align="center" gap={6}>
                       <img
                         src={dieImages[die]}
-                        style={{ width: 42, height: 42 }}
+                        style={{ width: 36, height: 36 }}
                       />
                       <div className="dice-tile-count">
                         {gameDiceSum[die as 1 | 2 | 3 | 4 | 5 | 6]}
