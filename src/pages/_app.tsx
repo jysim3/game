@@ -225,6 +225,13 @@ const NavContent = () => {
         label="King Joker"
         icon={kingJokerImages["K"]}
       />
+
+      <List header="Tools" mode="card">
+        <List.Item onClick={() => navigate("/watchlist")}>
+          Watchlist trigger table
+        </List.Item>
+      </List>
+
       <Button
         type="primary"
         danger
