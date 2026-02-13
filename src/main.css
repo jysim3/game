@@ -241,6 +241,17 @@ a {
   color: var(--app-text-muted);
 }
 
+/* Ensure List.Item labels are readable in the dark drawer */
+.nav-drawer .adm-list-item {
+  background: transparent;
+}
+
+.nav-drawer .adm-list-item-content,
+.nav-drawer .adm-list-item-content-main,
+.nav-drawer .adm-list-item-content-main * {
+  color: var(--app-text) !important;
+}
+
 .adm-list-item-content-prefix {
   max-width: 6rem;
   overflow: hidden;
