@@ -170,7 +170,7 @@ const NavContent = () => {
   const navigate = useNavigate();
   useEffect(() => {
     get(query(ref(database, "room/"))).then((snapshot) => {
-      const data = snapshot.val() as {
+      const data = (snapshot.val() || {}) as {
         [id: string]: GameStoreType<object, object>;
       };
       setRooms(data);
@@ -202,7 +202,7 @@ const NavContent = () => {
         style={{ margin: "8px 10px 10px" }}
         onClick={() =>
           get(query(ref(database, "room/"))).then((snapshot) => {
-            const data = snapshot.val() as {
+            const data = (snapshot.val() || {}) as {
               [id: string]: GameStoreType<object, object>;
             };
             setRooms(data);
