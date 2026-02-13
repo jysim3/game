@@ -221,7 +221,13 @@ a {
 }
 
 .nav-drawer .adm-list-header {
-  color: var(--app-text-muted);
+  /* Header text like "Dice game" / "King Joker" */
+  color: var(--app-text) !important;
+  opacity: 0.86;
+}
+
+.nav-drawer .adm-list-header * {
+  color: inherit !important;
 }
 
 .nav-drawer .adm-list-item-content-prefix {
