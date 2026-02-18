@@ -339,10 +339,23 @@ const RouletteWheel = ({
 
   // Keep a gentle slow rotation while waiting for the host.
   useEffect(() => {
-    if (status !== "betting") return;
-    setSpinning(false);
-    // Don't reset rotation hard; keep whatever we had.
-  }, [status]);
+    if (status !== "betting" || spinning) return;
+
+    let raf = 0;
+    let lastTs = 0;
+    const speedDegPerSec = 14; // slow, casino vibe
+
+    const tick = (ts: number) => {
+      if (!lastTs) lastTs = ts;
+      const dt = (ts - lastTs) / 1000;
+      lastTs = ts;
+      setRotation((r) => r + dt * speedDegPerSec);
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [status, spinning]);
 
   useEffect(() => {
     if (status !== "spinning" || winningNumber === undefined) return;
@@ -396,10 +409,12 @@ const RouletteWheel = ({
       <svg
         width="100%"
         viewBox={`0 0 ${size} ${size}`}
-        className={`roulette-wheel ${status === "betting" && !spinning ? "roulette-wheel-idle" : ""}`}
+        className="roulette-wheel"
         style={{
           transform: `rotate(${rotation}deg)`,
-          transition: spinning ? "transform 4.2s cubic-bezier(0.12, 0.85, 0.1, 1)" : "none",
+          transition: spinning
+            ? "transform 4.2s cubic-bezier(0.12, 0.85, 0.1, 1)"
+            : "none",
         }}
         aria-label="Roulette wheel"
       >
