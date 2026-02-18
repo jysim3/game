@@ -100,9 +100,12 @@ const useGameStore = createGameStore<RouletteGameData, RouletteUserData, Roulett
         const { gameData, username, updateGameData, roomId } = get();
         if (!roomId) return;
         if (gameData.hostUsername) return;
+
+        const hostNickname = gameData.users?.[username]?.nickname;
+        // Firebase rejects `undefined` values in update() payloads.
         updateGameData({
           hostUsername: username,
-          hostNickname: gameData.users?.[username]?.nickname,
+          ...(hostNickname ? { hostNickname } : {}),
         });
       },
       placeBet: (bet) => {
