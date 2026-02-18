@@ -4,10 +4,16 @@ import { List, Segmented } from "antd-mobile";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { createGameStore } from "../../../api/gamestore";
+import { serverTimestamp } from "firebase/database";
 
 type RouletteGameData = {
   hostUsername?: string;
   hostNickname?: string;
+  spin?: {
+    round: number;
+    winningNumber: number;
+    startedAt?: number;
+  };
   lastSpin?: {
     round: number;
     winningNumber: number;
@@ -122,13 +128,27 @@ const useGameStore = createGameStore<RouletteGameData, RouletteUserData, Roulett
         const { gameData, updateGameData, roomId } = get();
         if (!roomId) return;
         const winningNumber = Math.floor(Math.random() * 37); // 0-36
+
+        // Phase 1: start animation across all clients.
         updateGameData({
-          status: "result",
-          lastSpin: {
+          status: "spinning",
+          spin: {
             round: gameData.round,
             winningNumber,
+            startedAt: serverTimestamp() as unknown as number,
           },
         });
+
+        // Phase 2: reveal after the spin completes.
+        setTimeout(() => {
+          updateGameData({
+            status: "result",
+            lastSpin: {
+              round: gameData.round,
+              winningNumber,
+            },
+          });
+        }, 4200);
       },
       nextRound: () => {
         const { gameData, updateGameData, roomId } = get();
@@ -169,6 +189,7 @@ function RouletteRoom() {
 
   const round = useGameStore((s) => s.gameData.round);
   const status = useGameStore((s) => s.gameData.status);
+  const spinData = useGameStore((s) => s.gameData.spin);
   const lastSpin = useGameStore((s) => s.gameData.lastSpin);
 
   const hostNickname = useGameStore((s) => s.gameData.hostNickname);
@@ -186,6 +207,16 @@ function RouletteRoom() {
 
   const playersReady = currentRoundUsers.filter((u) => !!u.bet).length;
 
+  const phaseLabel =
+    status === "betting" ? "Place your bets" : status === "spinning" ? "Spinning…" : "Result";
+
+  const winningNumberForWheel =
+    status === "spinning" && spinData?.round === round
+      ? spinData.winningNumber
+      : lastSpin?.round === round
+        ? lastSpin.winningNumber
+        : undefined;
+
   return (
     <Flex vertical flex={1} style={{ minHeight: 0 }}>
       <div className="page-header">
@@ -195,7 +226,7 @@ function RouletteRoom() {
           </Typography.Title>
           <div className="page-subtitle">Room: {roomLabel}</div>
           <div className="page-subtitle">
-            Round {round} · {status === "betting" ? "Place your bets" : "Result"}
+            Round {round} · {phaseLabel}
           </div>
         </div>
 
@@ -212,72 +243,196 @@ function RouletteRoom() {
         <div className="page">
           <Flex vertical gap={12}>
             <Card styles={{ body: { padding: 12 } }}>
-              <WheelPanel winningNumber={lastSpin?.round === round ? lastSpin.winningNumber : undefined} />
+              <WheelPanel
+                status={status as any}
+                winningNumber={winningNumberForWheel}
+                startedAt={spinData?.round === round ? spinData.startedAt : undefined}
+              />
             </Card>
 
-            <Card styles={{ body: { padding: 12 } }}>
-              <HostPanel isHost={isHost} />
-            </Card>
+            {isHost ? (
+              <>
+                <Card styles={{ body: { padding: 12 } }}>
+                  <HostPanel isHost={isHost} />
+                </Card>
 
-            <Card styles={{ body: { padding: 12 } }}>
-              <BetsPanel isHost={isHost} />
-            </Card>
+                <Card styles={{ body: { padding: 12 } }}>
+                  <BetsPanel isHost={isHost} />
+                </Card>
+              </>
+            ) : (
+              <Card styles={{ body: { padding: 12 } }}>
+                <YourBetPanel disabled={status !== "betting"} />
+              </Card>
+            )}
           </Flex>
         </div>
 
-        <div className="fixed-bottom-spacer" />
+        {isHost ? <div className="fixed-bottom-spacer" /> : null}
       </div>
 
-      <div className="fixed-bottom">
-        <div className="fixed-bottom-inner">
-          <Card>
-            <YourBetPanel disabled={status !== "betting"} />
-          </Card>
+      {isHost ? (
+        <div className="fixed-bottom">
+          <div className="fixed-bottom-inner">
+            <Card>
+              <YourBetPanel disabled={status !== "betting"} />
+            </Card>
+          </div>
         </div>
-      </div>
+      ) : null}
     </Flex>
   );
 }
 
-const WheelPanel = ({ winningNumber }: { winningNumber?: number }) => {
-  const color = winningNumber === undefined ? "" : getColor(winningNumber);
-  const bg =
-    winningNumber === undefined
-      ? "rgba(255,255,255,0.06)"
-      : color === "red"
-        ? "rgba(231, 76, 60, 0.18)"
-        : color === "black"
-          ? "rgba(0, 0, 0, 0.28)"
-          : "rgba(46, 204, 113, 0.18)";
+const WheelPanel = ({
+  status,
+  winningNumber,
+  startedAt,
+}: {
+  status: "betting" | "spinning" | "result" | string;
+  winningNumber?: number;
+  startedAt?: number;
+}) => {
+  return (
+    <Flex vertical gap={12}>
+      <Flex justify="space-between" align="center" wrap gap={12}>
+        <div>
+          <Typography.Title level={5} style={{ margin: 0 }}>
+            Wheel
+          </Typography.Title>
+          <Typography.Text className="page-subtitle">
+            Classic casino colors · 0–36 (no 00)
+          </Typography.Text>
+        </div>
+
+        <Tag color={winningNumber === undefined ? "default" : getColor(winningNumber)}>
+          {winningNumber === undefined
+            ? status === "spinning"
+              ? "Spinning…"
+              : "Waiting…"
+            : `Winning: ${winningNumber}`}
+        </Tag>
+      </Flex>
+
+      <RouletteWheel
+        status={status}
+        winningNumber={winningNumber}
+        startedAt={startedAt}
+      />
+    </Flex>
+  );
+};
+
+const RouletteWheel = ({
+  status,
+  winningNumber,
+  startedAt,
+}: {
+  status: string;
+  winningNumber?: number;
+  startedAt?: number;
+}) => {
+  const slice = 360 / 37;
+
+  const [rotation, setRotation] = useState(0);
+  const [spinning, setSpinning] = useState(false);
+
+  // Keep a gentle slow rotation while waiting for the host.
+  useEffect(() => {
+    if (status !== "betting") return;
+    setSpinning(false);
+    // Don't reset rotation hard; keep whatever we had.
+  }, [status]);
+
+  useEffect(() => {
+    if (status !== "spinning" || winningNumber === undefined) return;
+
+    const baseStart = rotation % 360;
+    const targetCenterAngle = -90 + (winningNumber + 0.5) * slice; // segments start at top
+    // Rotate wheel so the winning segment lands under the pointer at top.
+    const desired = -targetCenterAngle;
+
+    const extraSpins = 8;
+    const target = baseStart + extraSpins * 360 + desired;
+
+    setSpinning(true);
+    setRotation(target);
+
+    const timer = setTimeout(() => setSpinning(false), 4300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, winningNumber, startedAt]);
+
+  const size = 240;
+  const r = 105;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  const polarToCartesian = (angleDeg: number) => {
+    const a = (Math.PI / 180) * angleDeg;
+    return {
+      x: cx + r * Math.cos(a),
+      y: cy + r * Math.sin(a),
+    };
+  };
+
+  const segmentPath = (startAngle: number, endAngle: number) => {
+    const start = polarToCartesian(startAngle);
+    const end = polarToCartesian(endAngle);
+    const largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
+    return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y} Z`;
+  };
+
+  const fillFor = (n: number) => {
+    const c = getColor(n);
+    if (c === "green") return "#1f8f5a";
+    if (c === "red") return "#c0392b";
+    return "#111418";
+  };
 
   return (
-    <Flex justify="space-between" align="center" wrap gap={12}>
-      <div>
-        <Typography.Title level={5} style={{ margin: 0 }}>
-          Spin result
-        </Typography.Title>
-        <Typography.Text className="page-subtitle">
-          Numbers: 0–36 (no 00)
-        </Typography.Text>
-      </div>
-
-      <div
+    <div className="roulette-wheel-wrap">
+      <div className="roulette-pointer" />
+      <svg
+        width="100%"
+        viewBox={`0 0 ${size} ${size}`}
+        className={`roulette-wheel ${status === "betting" && !spinning ? "roulette-wheel-idle" : ""}`}
         style={{
-          width: 88,
-          height: 88,
-          borderRadius: 999,
-          background: bg,
-          border: "1px solid rgba(255,255,255,0.18)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: 800,
-          fontSize: 28,
+          transform: `rotate(${rotation}deg)`,
+          transition: spinning ? "transform 4.2s cubic-bezier(0.12, 0.85, 0.1, 1)" : "none",
         }}
+        aria-label="Roulette wheel"
       >
-        {winningNumber === undefined ? "—" : winningNumber}
-      </div>
-    </Flex>
+        <defs>
+          <radialGradient id="wheelGlow" cx="50%" cy="45%" r="60%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.12)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0.02)" />
+          </radialGradient>
+        </defs>
+
+        {/* Outer rim */}
+        <circle cx={cx} cy={cy} r={r + 10} fill="url(#wheelGlow)" stroke="rgba(212,175,55,0.55)" strokeWidth={6} />
+
+        {/* Segments */}
+        {ROULETTE_NUMBERS.map((n) => {
+          const start = -90 + n * slice;
+          const end = start + slice;
+          return (
+            <path
+              key={n}
+              d={segmentPath(start, end)}
+              fill={fillFor(n)}
+              stroke="rgba(212,175,55,0.28)"
+              strokeWidth={1}
+            />
+          );
+        })}
+
+        {/* Inner ring */}
+        <circle cx={cx} cy={cy} r={r * 0.48} fill="rgba(0,0,0,0.35)" stroke="rgba(212,175,55,0.35)" strokeWidth={4} />
+        <circle cx={cx} cy={cy} r={r * 0.12} fill="rgba(255,255,255,0.85)" />
+      </svg>
+    </div>
   );
 };
 

@@ -257,3 +257,45 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Roulette wheel */
+.roulette-wheel-wrap {
+  position: relative;
+  width: min(340px, 100%);
+  margin: 6px auto 2px;
+}
+
+.roulette-wheel {
+  display: block;
+  width: 100%;
+  border-radius: 999px;
+  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.42));
+}
+
+/* Gentle idle rotation */
+.roulette-wheel-idle {
+  animation: rouletteIdle 18s linear infinite;
+}
+
+@keyframes rouletteIdle {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.roulette-pointer {
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 18px solid rgba(212, 175, 55, 0.95);
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+  z-index: 2;
+}
