@@ -11,7 +11,7 @@ import {
 } from "antd-mobile";
 import enUS from "antd-mobile/es/locales/en-US";
 import { get, query, ref, remove } from "firebase/database";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -70,6 +70,7 @@ const CLEANUP_KEY = "jysim3:lastRoomCleanupMs";
 
 const Layout = () => {
   const [visible, setVisible] = useState(false);
+  const didPromptNickname = useRef(false);
 
   const cancelDirtyNickname = useNicknameStore(
     (state) => state.cancelDirtyNickname,
@@ -93,11 +94,18 @@ const Layout = () => {
   }, []);
 
   useEffect(() => {
-    if (!nickname) {
+    if (!nickname && !didPromptNickname.current) {
+      didPromptNickname.current = true;
       Dialog.confirm({
         content: <EditNickname />,
-        onConfirm: () => confirmDirtyNickname(),
-        onCancel: () => cancelDirtyNickname(),
+        onConfirm: () => {
+          confirmDirtyNickname();
+        },
+        onCancel: () => {
+          cancelDirtyNickname();
+          // Allow re-prompt if user canceled without setting a name.
+          didPromptNickname.current = false;
+        },
       });
     }
   }, [nickname, cancelDirtyNickname, confirmDirtyNickname]);
