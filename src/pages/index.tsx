@@ -60,6 +60,9 @@ const Home = () => {
               <Button onClick={() => navigate(`/app/kingjoker/${newRoomId()}`)}>
                 New King Joker room
               </Button>
+              <Button onClick={() => navigate(`/app/roulette/${newRoomId()}`)}>
+                New Roulette room
+              </Button>
             </Space>
           </Flex>
         </Card>

@@ -20,6 +20,7 @@ import { GameStoreType } from "../api/gamestore";
 import personLogo from "../assets/jysim.png";
 import dieImages from "./app/dice/_assets";
 import kingJokerImages from "./app/kingjoker/_assets";
+import rouletteImages from "./app/roulette/_assets";
 
 type NicknameStore = {
   nickname: string;
@@ -225,7 +226,13 @@ const NavContent = () => {
         label="King Joker"
         icon={kingJokerImages["K"]}
       />
-
+      <GameSection
+        rooms={sortedRooms}
+        basePath="/app/roulette"
+        gameId="roulette"
+        label="Roulette wheel"
+        icon={rouletteImages.wheel}
+      />
 
       <Button
         type="primary"
