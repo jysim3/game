@@ -41,7 +41,14 @@ type RouletteActions = {
   nextRound: () => void;
 };
 
-const ROULETTE_NUMBERS = Array.from({ length: 37 }, (_, i) => i); // 0-36, no 00
+// European single-zero wheel order (clockwise), 0–36 (no 00)
+const WHEEL_ORDER = [
+  0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23,
+  10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3,
+  26,
+] as const;
+
+const ROULETTE_NUMBERS = Array.from({ length: 37 }, (_, i) => i); // for selection UI
 
 const RED_NUMBERS = new Set([
   1, 3, 5, 7, 9, 12, 14, 16, 18,
@@ -332,7 +339,7 @@ const RouletteWheel = ({
   winningNumber?: number;
   startedAt?: number;
 }) => {
-  const slice = 360 / 37;
+  const slice = 360 / WHEEL_ORDER.length;
 
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
@@ -361,7 +368,9 @@ const RouletteWheel = ({
     if (status !== "spinning" || winningNumber === undefined) return;
 
     const baseStart = rotation % 360;
-    const targetCenterAngle = -90 + (winningNumber + 0.5) * slice; // segments start at top
+
+    const winningIndex = Math.max(0, WHEEL_ORDER.indexOf(winningNumber as any));
+    const targetCenterAngle = -90 + (winningIndex + 0.5) * slice; // segments start at top
     // Rotate wheel so the winning segment lands under the pointer at top.
     const desired = -targetCenterAngle;
 
@@ -429,14 +438,14 @@ const RouletteWheel = ({
         <circle cx={cx} cy={cy} r={r + 10} fill="url(#wheelGlow)" stroke="rgba(212,175,55,0.55)" strokeWidth={6} />
 
         {/* Segments */}
-        {ROULETTE_NUMBERS.map((n) => {
-          const start = -90 + n * slice;
+        {WHEEL_ORDER.map((num, idx) => {
+          const start = -90 + idx * slice;
           const end = start + slice;
           return (
             <path
-              key={n}
+              key={num}
               d={segmentPath(start, end)}
-              fill={fillFor(n)}
+              fill={fillFor(num)}
               stroke="rgba(212,175,55,0.28)"
               strokeWidth={1}
             />

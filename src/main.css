@@ -282,7 +282,8 @@ a {
   height: 0;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  border-bottom: 18px solid rgba(212, 175, 55, 0.95);
+  /* point DOWN into the wheel */
+  border-top: 18px solid rgba(212, 175, 55, 0.95);
   filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
   z-index: 2;
 }
