@@ -380,15 +380,19 @@ const RouletteWheel = ({
   useEffect(() => {
     if (status !== "spinning" || winningNumber === undefined) return;
 
-    const baseStart = rotation % 360;
+    const current = rotation;
+    const currentMod = ((current % 360) + 360) % 360;
 
     const winningIndex = Math.max(0, WHEEL_ORDER.indexOf(winningNumber as any));
     const targetCenterAngle = -90 + (winningIndex + 0.5) * slice; // segments start at top
-    // Rotate wheel so the winning segment lands under the pointer at top.
-    const desired = -targetCenterAngle;
+    // Absolute rotation (mod 360) we want at the end.
+    const desiredMod = (((-targetCenterAngle) % 360) + 360) % 360;
+
+    // Always spin forward: add multiple turns plus the positive delta to land exactly.
+    const delta = ((desiredMod - currentMod) + 360) % 360;
 
     const extraSpins = 12;
-    const target = baseStart + extraSpins * 360 + desired;
+    const target = current + extraSpins * 360 + delta;
 
     setSpinning(true);
     setRotation(target);
@@ -403,17 +407,17 @@ const RouletteWheel = ({
   const cx = size / 2;
   const cy = size / 2;
 
-  const polarToCartesian = (angleDeg: number) => {
+  const polarToCartesian = (angleDeg: number, radius: number = r) => {
     const a = (Math.PI / 180) * angleDeg;
     return {
-      x: cx + r * Math.cos(a),
-      y: cy + r * Math.sin(a),
+      x: cx + radius * Math.cos(a),
+      y: cy + radius * Math.sin(a),
     };
   };
 
   const segmentPath = (startAngle: number, endAngle: number) => {
-    const start = polarToCartesian(startAngle);
-    const end = polarToCartesian(endAngle);
+    const start = polarToCartesian(startAngle, r);
+    const end = polarToCartesian(endAngle, r);
     const largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
     return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y} Z`;
   };
@@ -462,6 +466,30 @@ const RouletteWheel = ({
               stroke="rgba(212,175,55,0.28)"
               strokeWidth={1}
             />
+          );
+        })}
+
+        {/* Numbers */}
+        {WHEEL_ORDER.map((num, idx) => {
+          const mid = -90 + (idx + 0.5) * slice;
+          const p = polarToCartesian(mid, r * 0.76);
+          const fill = num === 0 ? "rgba(255, 220, 140, 0.95)" : "rgba(255,255,255,0.86)";
+          return (
+            <text
+              key={`t-${num}`}
+              x={p.x}
+              y={p.y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill={fill}
+              fontSize={10}
+              fontFamily="Cinzel, ui-serif, Georgia, serif"
+              fontWeight={700}
+              style={{ userSelect: "none" }}
+              transform={`rotate(${mid + 90} ${p.x} ${p.y})`}
+            >
+              {num}
+            </text>
           );
         })}
 
