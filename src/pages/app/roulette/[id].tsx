@@ -21,7 +21,6 @@ type RouletteGameData = {
 };
 
 type BetType =
-  | { kind: "straight"; number: number }
   | { kind: "color"; color: "red" | "black" }
   | { kind: "parity"; parity: "odd" | "even" }
   | { kind: "range"; range: "low" | "high" }
@@ -48,7 +47,7 @@ const WHEEL_ORDER = [
   26,
 ] as const;
 
-const ROULETTE_NUMBERS = Array.from({ length: 37 }, (_, i) => i); // for selection UI
+// (Straight number selection UI removed)
 
 const RED_NUMBERS = new Set([
   1, 3, 5, 7, 9, 12, 14, 16, 18,
@@ -63,8 +62,6 @@ const getColor = (n: number): "green" | "red" | "black" => {
 const describeBet = (bet?: BetType) => {
   if (!bet) return "—";
   switch (bet.kind) {
-    case "straight":
-      return `Straight ${bet.number}`;
     case "color":
       return bet.color === "red" ? "Red" : "Black";
     case "parity":
@@ -83,8 +80,6 @@ const describeBet = (bet?: BetType) => {
 const betWins = (bet: BetType | undefined, n: number) => {
   if (!bet) return false;
   switch (bet.kind) {
-    case "straight":
-      return n === bet.number;
     case "color":
       return n !== 0 && getColor(n) === bet.color;
     case "parity":
@@ -280,7 +275,7 @@ function RouletteRoom() {
           </Flex>
         </div>
 
-        <div className="fixed-bottom-spacer" />
+        <div className="roulette-bottom-spacer" />
       </div>
 
       <div className="fixed-bottom roulette-controls-bar">
@@ -585,12 +580,12 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
   const placeBet = useGameStore((s) => s.placeBet);
   const clearBet = useGameStore((s) => s.clearBet);
 
-  const MODES = ["Number", "Color", "Even/Odd", "Low/High", "Dozen"] as const;
-  const [mode, setMode] = useState<(typeof MODES)[number]>("Number");
+  const MODES = ["Color", "Even/Odd", "Low/High", "Dozen"] as const;
+  const [mode, setMode] = useState<(typeof MODES)[number]>("Color");
 
   const currentBet = userData?.round === round ? userData?.bet : undefined;
 
-  const setStraight = (n: number) => placeBet({ kind: "straight", number: n });
+  // Straight number bet UI removed (felt-style quick bets only)
 
   return (
     <Flex vertical gap={10}>
@@ -629,32 +624,15 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
         ))}
       </div>
 
-      <div style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? "none" : "auto" }}>
-        {mode === "Number" ? (
-          <Flex wrap gap={8}>
-            {ROULETTE_NUMBERS.map((n) => (
-              <Button
-                key={n}
-                onClick={() => setStraight(n)}
-                style={{
-                  width: 54,
-                  background:
-                    n === 0
-                      ? "rgba(46, 204, 113, 0.18)"
-                      : getColor(n) === "red"
-                        ? "rgba(231, 76, 60, 0.18)"
-                        : "rgba(0, 0, 0, 0.22)",
-                  border: "1px solid rgba(255,255,255,0.18)",
-                }}
-              >
-                {n}
-              </Button>
-            ))}
-          </Flex>
-        ) : null}
-
+      <div
+        className="roulette-bet-panel"
+        style={{
+          opacity: disabled ? 0.5 : 1,
+          pointerEvents: disabled ? "none" : "auto",
+        }}
+      >
         {mode === "Color" ? (
-          <Space wrap>
+          <Space wrap className="roulette-bet-options">
             <Button type="primary" onClick={() => placeBet({ kind: "color", color: "red" })}>
               Red
             </Button>
