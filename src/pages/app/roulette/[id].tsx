@@ -395,7 +395,10 @@ const RouletteWheel = ({
     const target = current + extraSpins * 360 + delta;
 
     setSpinning(true);
-    setRotation(target);
+    // Force a separate frame so the browser applies the transition before we jump to the target.
+    requestAnimationFrame(() => {
+      setRotation(target);
+    });
 
     const timer = setTimeout(() => setSpinning(false), 7400);
     return () => clearTimeout(timer);
@@ -472,8 +475,8 @@ const RouletteWheel = ({
         {/* Numbers */}
         {WHEEL_ORDER.map((num, idx) => {
           const mid = -90 + (idx + 0.5) * slice;
-          const p = polarToCartesian(mid, r * 0.76);
-          const fill = num === 0 ? "rgba(255, 220, 140, 0.95)" : "rgba(255,255,255,0.86)";
+          const p = polarToCartesian(mid, r * 0.78);
+          const fill = num === 0 ? "rgba(255, 220, 140, 0.98)" : "rgba(255,255,255,0.92)";
           return (
             <text
               key={`t-${num}`}
@@ -482,7 +485,10 @@ const RouletteWheel = ({
               textAnchor="middle"
               dominantBaseline="middle"
               fill={fill}
-              fontSize={10}
+              stroke="rgba(0,0,0,0.65)"
+              strokeWidth={2}
+              paintOrder="stroke"
+              fontSize={12}
               fontFamily="Cinzel, ui-serif, Georgia, serif"
               fontWeight={700}
               style={{ userSelect: "none" }}
