@@ -271,6 +271,28 @@ body {
   font-weight: 700;
 }
 
+.roulette-qr {
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background: rgba(0, 0, 0, 0.22);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.roulette-qr canvas {
+  border-radius: 10px;
+}
+
+.roulette-qr-caption {
+  font-family: "Cinzel", ui-serif, Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
 .fixed-bottom-inner {
   width: 100%;
   max-width: 980px;

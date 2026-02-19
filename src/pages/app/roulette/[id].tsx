@@ -1,10 +1,11 @@
 import { CrownOutlined } from "@ant-design/icons";
 import { Button, Card, Divider, Flex, Tag, Typography } from "antd";
 import { List } from "antd-mobile";
+import { serverTimestamp } from "firebase/database";
+import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { createGameStore } from "../../../api/gamestore";
-import { serverTimestamp } from "firebase/database";
 
 type RouletteGameData = {
   hostUsername?: string;
@@ -519,6 +520,18 @@ const HostPanel = ({ isHost }: { isHost: boolean }) => {
   const spin = useGameStore((s) => s.spin);
   const nextRound = useGameStore((s) => s.nextRound);
 
+  const roomId = useGameStore((s) => s.roomId);
+
+  const shareUrl = useMemo(() => {
+    // Prefer current origin in case this is deployed to a custom domain.
+    // Fall back to the canonical site if window is unavailable.
+    const origin =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : "https://jysim3.com";
+    return `${origin}/app/roulette/${roomId}`;
+  }, [roomId]);
+
   return (
     <Flex justify="space-between" align="center" wrap gap={12}>
       <div>
@@ -533,17 +546,30 @@ const HostPanel = ({ isHost }: { isHost: boolean }) => {
       {!isHost ? (
         <Tag>Only the host can spin</Tag>
       ) : (
-        <div>
-          {status === "betting" ? (
-            <Button type="primary" onClick={spin}>
-              Spin
-            </Button>
-          ) : (
-            <Button type="primary" onClick={nextRound}>
-              Next round
-            </Button>
-          )}
-        </div>
+        <Flex align="center" gap={12} wrap>
+          <div className="roulette-qr">
+            <QRCodeCanvas
+              value={shareUrl}
+              size={92}
+              includeMargin={false}
+              bgColor="rgba(0,0,0,0)"
+              fgColor="rgba(255,255,255,0.92)"
+            />
+            <div className="roulette-qr-caption">Scan to join</div>
+          </div>
+
+          <div>
+            {status === "betting" ? (
+              <Button type="primary" onClick={spin}>
+                Spin
+              </Button>
+            ) : (
+              <Button type="primary" onClick={nextRound}>
+                Next round
+              </Button>
+            )}
+          </div>
+        </Flex>
       )}
     </Flex>
   );
@@ -733,14 +759,14 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
                 className="roulette-felt-btn"
                 onClick={() => placeBet({ kind: "parity", parity: "even" })}
               >
-                Even
+                Even / 偶
               </button>
               <button
                 type="button"
                 className="roulette-felt-btn"
                 onClick={() => placeBet({ kind: "parity", parity: "odd" })}
               >
-                Odd
+                Odd / 奇
               </button>
             </div>
           </div>
