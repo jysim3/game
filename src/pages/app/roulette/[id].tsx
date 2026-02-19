@@ -385,8 +385,9 @@ const RouletteWheel = ({
 
     const winningIndex = Math.max(0, WHEEL_ORDER.indexOf(winningNumber as any));
     const targetCenterAngle = -90 + (winningIndex + 0.5) * slice; // segments start at top
-    // Absolute rotation (mod 360) we want at the end.
-    const desiredMod = (((-targetCenterAngle) % 360) + 360) % 360;
+    // Absolute rotation (mod 360) we want at the end: put winning segment under the TOP pointer.
+    // We want (targetCenterAngle + rotation) === -90deg.
+    const desiredMod = (((-90 - targetCenterAngle) % 360) + 360) % 360;
 
     // Always spin forward: add multiple turns plus the positive delta to land exactly.
     const delta = ((desiredMod - currentMod) + 360) % 360;
