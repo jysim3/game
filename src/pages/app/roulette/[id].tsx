@@ -1,10 +1,11 @@
 import { CrownOutlined } from "@ant-design/icons";
 import { Button, Card, Divider, Flex, Tag, Typography } from "antd";
 import { List } from "antd-mobile";
-import { serverTimestamp } from "firebase/database";
+import { ref, runTransaction, serverTimestamp, update } from "firebase/database";
 import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
+import { database } from "../../../api/firebaseConfig";
 import { createGameStore } from "../../../api/gamestore";
 
 type RouletteGameData = {
@@ -106,16 +107,32 @@ const useGameStore = createGameStore<RouletteGameData, RouletteUserData, Roulett
     },
     actions: (_, get) => ({
       claimHost: () => {
-        const { gameData, username, updateGameData, roomId } = get();
+        const { gameData, username, roomId } = get();
         if (!roomId) return;
         if (gameData.hostUsername) return;
 
-        const hostNickname = gameData.users?.[username]?.nickname;
-        // Firebase rejects `undefined` values in update() payloads.
-        updateGameData({
-          hostUsername: username,
-          ...(hostNickname ? { hostNickname } : {}),
-        });
+        // IMPORTANT: multiple clients may load at the same time.
+        // Use a transaction so "first writer wins" and later joiners can't steal host.
+        const hostUsernameRef = ref(database, `room/${roomId}/hostUsername`);
+        runTransaction(hostUsernameRef, (current) => current || username).then(
+          (res) => {
+            if (!res.committed) return;
+            if (res.snapshot.val() !== username) return;
+
+            const hostNickname = gameData.users?.[username]?.nickname;
+            if (!hostNickname) return;
+
+            // Only set nickname if it's not already set.
+            const hostNicknameRef = ref(database, `room/${roomId}/hostNickname`);
+            runTransaction(hostNicknameRef, (cur) => cur || hostNickname);
+
+            // Ensure room metadata is up to date (without overwriting host fields).
+            update(ref(database, `room/${roomId}`), {
+              gameId: "roulette",
+              lastUpdated: serverTimestamp(),
+            });
+          },
+        );
       },
       placeBet: (bet) => {
         const { gameData, setUserData, roomId } = get();
