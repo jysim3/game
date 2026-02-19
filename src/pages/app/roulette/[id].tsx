@@ -3,7 +3,7 @@ import { Button, Card, Divider, Flex, Tag, Typography } from "antd";
 import { List } from "antd-mobile";
 import { serverTimestamp } from "firebase/database";
 import { QRCodeCanvas } from "qrcode.react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { createGameStore } from "../../../api/gamestore";
 
@@ -361,54 +361,82 @@ const RouletteWheel = ({
 }) => {
   const slice = 360 / WHEEL_ORDER.length;
 
-  const [rotation, setRotation] = useState(0);
+  const wheelRef = useRef<SVGSVGElement | null>(null);
+  const rotationRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
   const [spinning, setSpinning] = useState(false);
 
-  // Keep a gentle slow rotation while waiting for the host.
-  useEffect(() => {
-    if (status !== "betting" || spinning) return;
+  const applyRotation = (deg: number) => {
+    rotationRef.current = deg;
+    const el = wheelRef.current;
+    if (!el) return;
+    el.style.transform = `rotate(${deg}deg)`;
+  };
 
-    let raf = 0;
+  const stopIdle = () => {
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  };
+
+  // Idle rotation (imperative) to avoid React re-rendering at 60fps.
+  useEffect(() => {
+    if (status !== "betting" || spinning) {
+      stopIdle();
+      return;
+    }
+
     let lastTs = 0;
-    const speedDegPerSec = 14; // slow, casino vibe
+    const speedDegPerSec = 14;
 
     const tick = (ts: number) => {
       if (!lastTs) lastTs = ts;
       const dt = (ts - lastTs) / 1000;
       lastTs = ts;
-      setRotation((r) => r + dt * speedDegPerSec);
-      raf = requestAnimationFrame(tick);
+      applyRotation(rotationRef.current + dt * speedDegPerSec);
+      rafRef.current = requestAnimationFrame(tick);
     };
 
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    rafRef.current = requestAnimationFrame(tick);
+    return () => stopIdle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, spinning]);
 
+  // Spin animation (imperative) so it always animates, even after many rounds.
   useEffect(() => {
     if (status !== "spinning" || winningNumber === undefined) return;
 
-    const current = rotation;
+    stopIdle();
+
+    const el = wheelRef.current;
+    if (!el) return;
+
+    const current = rotationRef.current;
     const currentMod = ((current % 360) + 360) % 360;
 
     const winningIndex = Math.max(0, WHEEL_ORDER.indexOf(winningNumber as any));
-    const targetCenterAngle = -90 + (winningIndex + 0.5) * slice; // segments start at top
-    // Absolute rotation (mod 360) we want at the end: put winning segment under the TOP pointer.
-    // We want (targetCenterAngle + rotation) === -90deg.
+    const targetCenterAngle = -90 + (winningIndex + 0.5) * slice;
     const desiredMod = (((-90 - targetCenterAngle) % 360) + 360) % 360;
-
-    // Always spin forward: add multiple turns plus the positive delta to land exactly.
     const delta = ((desiredMod - currentMod) + 360) % 360;
 
     const extraSpins = 12;
     const target = current + extraSpins * 360 + delta;
 
     setSpinning(true);
-    // Force a separate frame so the browser applies the transition before we jump to the target.
+
+    // Set transition first, then apply transform on next frame.
+    el.style.transition = "transform 21.6s cubic-bezier(0.07, 0.92, 0.04, 1)";
     requestAnimationFrame(() => {
-      setRotation(target);
+      applyRotation(target);
     });
 
-    const timer = setTimeout(() => setSpinning(false), 22000);
+    const timer = setTimeout(() => {
+      setSpinning(false);
+      // Remove transition so idle feels immediate again.
+      if (wheelRef.current) wheelRef.current.style.transition = "";
+    }, 22000);
+
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, winningNumber, startedAt]);
@@ -444,15 +472,10 @@ const RouletteWheel = ({
     <div className="roulette-wheel-wrap">
       <div className="roulette-pointer" />
       <svg
+        ref={wheelRef}
         width="100%"
         viewBox={`0 0 ${size} ${size}`}
         className="roulette-wheel"
-        style={{
-          transform: `rotate(${rotation}deg)`,
-          transition: spinning
-            ? "transform 21.6s cubic-bezier(0.07, 0.92, 0.04, 1)"
-            : "none", 
-        }}
         aria-label="Roulette wheel"
       >
         <defs>
