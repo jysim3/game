@@ -1,6 +1,6 @@
 import { CrownOutlined } from "@ant-design/icons";
 import { Button, Card, Divider, Flex, Space, Tag, Typography } from "antd";
-import { List, Segmented } from "antd-mobile";
+import { List } from "antd-mobile";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { createGameStore } from "../../../api/gamestore";
@@ -585,9 +585,8 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
   const placeBet = useGameStore((s) => s.placeBet);
   const clearBet = useGameStore((s) => s.clearBet);
 
-  const [mode, setMode] = useState<
-    "Number" | "Color" | "Even/Odd" | "Low/High" | "Dozen"
-  >("Number");
+  const MODES = ["Number", "Color", "Even/Odd", "Low/High", "Dozen"] as const;
+  const [mode, setMode] = useState<(typeof MODES)[number]>("Number");
 
   const currentBet = userData?.round === round ? userData?.bet : undefined;
 
@@ -615,11 +614,20 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
 
       <Divider style={{ margin: "4px 0" }} />
 
-      <Segmented
-        options={["Number", "Color", "Even/Odd", "Low/High", "Dozen"]}
-        value={mode}
-        onChange={(v) => setMode(v as any)}
-      />
+      <div className="roulette-mode-bar" role="tablist" aria-label="Bet type">
+        {MODES.map((m) => (
+          <button
+            key={m}
+            type="button"
+            role="tab"
+            aria-selected={mode === m}
+            className={`roulette-mode-chip ${mode === m ? "active" : ""}`}
+            onClick={() => setMode(m)}
+          >
+            {m}
+          </button>
+        ))}
+      </div>
 
       <div style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? "none" : "auto" }}>
         {mode === "Number" ? (
