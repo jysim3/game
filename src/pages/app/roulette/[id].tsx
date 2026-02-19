@@ -594,11 +594,28 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
   const placeBet = useGameStore((s) => s.placeBet);
   const clearBet = useGameStore((s) => s.clearBet);
 
-  // No tabs: show all quick bets in one felt panel
-
   const currentBet = userData?.round === round ? userData?.bet : undefined;
 
-  // Straight number bet UI removed (felt-style quick bets only)
+  const storageKey = "roulette:controlsCollapsed";
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(storageKey) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem(storageKey, next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   return (
     <Flex vertical gap={10}>
@@ -613,7 +630,18 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
         </div>
 
         <div className="roulette-control-row">
-          <Tag color={currentBet ? "blue" : "default"}>{describeBet(currentBet)}</Tag>
+          <div className="roulette-bet-pill" aria-label="Current bet">
+            <span className="roulette-bet-pill-label">{describeBet(currentBet)}</span>
+          </div>
+
+          <button
+            type="button"
+            className="roulette-felt-btn roulette-felt-btn-ghost"
+            onClick={toggleCollapsed}
+          >
+            {collapsed ? "Show" : "Hide"}
+          </button>
+
           <button
             type="button"
             className="roulette-felt-btn roulette-felt-btn-ghost"
@@ -627,100 +655,102 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
 
       <Divider style={{ margin: "4px 0" }} />
 
-      <div
-        className="roulette-bet-panel roulette-felt-panel"
-        style={{
-          opacity: disabled ? 0.55 : 1,
-          pointerEvents: disabled ? "none" : "auto",
-        }}
-      >
-        <div className="roulette-felt-section">
-          <div className="roulette-felt-label">Color</div>
-          <div className="roulette-felt-grid">
-            <button
-              type="button"
-              className="roulette-felt-btn roulette-felt-btn-red"
-              onClick={() => placeBet({ kind: "color", color: "red" })}
-            >
-              Red
-            </button>
-            <button
-              type="button"
-              className="roulette-felt-btn roulette-felt-btn-black"
-              onClick={() => placeBet({ kind: "color", color: "black" })}
-            >
-              Black
-            </button>
+      {collapsed ? null : (
+        <div
+          className="roulette-bet-panel roulette-felt-panel"
+          style={{
+            opacity: disabled ? 0.55 : 1,
+            pointerEvents: disabled ? "none" : "auto",
+          }}
+        >
+          <div className="roulette-felt-section">
+            <div className="roulette-felt-label">Color</div>
+            <div className="roulette-felt-grid">
+              <button
+                type="button"
+                className="roulette-felt-btn roulette-felt-btn-red"
+                onClick={() => placeBet({ kind: "color", color: "red" })}
+              >
+                Red
+              </button>
+              <button
+                type="button"
+                className="roulette-felt-btn roulette-felt-btn-black"
+                onClick={() => placeBet({ kind: "color", color: "black" })}
+              >
+                Black
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="roulette-felt-section">
-          <div className="roulette-felt-label">Even / Odd</div>
-          <div className="roulette-felt-grid">
-            <button
-              type="button"
-              className="roulette-felt-btn"
-              onClick={() => placeBet({ kind: "parity", parity: "even" })}
-            >
-              Even
-            </button>
-            <button
-              type="button"
-              className="roulette-felt-btn"
-              onClick={() => placeBet({ kind: "parity", parity: "odd" })}
-            >
-              Odd
-            </button>
+          <div className="roulette-felt-section">
+            <div className="roulette-felt-label">Even / Odd</div>
+            <div className="roulette-felt-grid">
+              <button
+                type="button"
+                className="roulette-felt-btn"
+                onClick={() => placeBet({ kind: "parity", parity: "even" })}
+              >
+                Even
+              </button>
+              <button
+                type="button"
+                className="roulette-felt-btn"
+                onClick={() => placeBet({ kind: "parity", parity: "odd" })}
+              >
+                Odd
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="roulette-felt-section">
-          <div className="roulette-felt-label">Low / High</div>
-          <div className="roulette-felt-grid">
-            <button
-              type="button"
-              className="roulette-felt-btn"
-              onClick={() => placeBet({ kind: "range", range: "low" })}
-            >
-              1–18
-            </button>
-            <button
-              type="button"
-              className="roulette-felt-btn"
-              onClick={() => placeBet({ kind: "range", range: "high" })}
-            >
-              19–36
-            </button>
+          <div className="roulette-felt-section">
+            <div className="roulette-felt-label">Low / High</div>
+            <div className="roulette-felt-grid">
+              <button
+                type="button"
+                className="roulette-felt-btn"
+                onClick={() => placeBet({ kind: "range", range: "low" })}
+              >
+                1–18
+              </button>
+              <button
+                type="button"
+                className="roulette-felt-btn"
+                onClick={() => placeBet({ kind: "range", range: "high" })}
+              >
+                19–36
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="roulette-felt-section">
-          <div className="roulette-felt-label">Dozens</div>
-          <div className="roulette-felt-grid roulette-felt-grid-3">
-            <button
-              type="button"
-              className="roulette-felt-btn"
-              onClick={() => placeBet({ kind: "dozen", dozen: 1 })}
-            >
-              1–12
-            </button>
-            <button
-              type="button"
-              className="roulette-felt-btn"
-              onClick={() => placeBet({ kind: "dozen", dozen: 2 })}
-            >
-              13–24
-            </button>
-            <button
-              type="button"
-              className="roulette-felt-btn"
-              onClick={() => placeBet({ kind: "dozen", dozen: 3 })}
-            >
-              25–36
-            </button>
+          <div className="roulette-felt-section">
+            <div className="roulette-felt-label">Dozens</div>
+            <div className="roulette-felt-grid roulette-felt-grid-3">
+              <button
+                type="button"
+                className="roulette-felt-btn"
+                onClick={() => placeBet({ kind: "dozen", dozen: 1 })}
+              >
+                1–12
+              </button>
+              <button
+                type="button"
+                className="roulette-felt-btn"
+                onClick={() => placeBet({ kind: "dozen", dozen: 2 })}
+              >
+                13–24
+              </button>
+              <button
+                type="button"
+                className="roulette-felt-btn"
+                onClick={() => placeBet({ kind: "dozen", dozen: 3 })}
+              >
+                25–36
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <Typography.Text className="page-subtitle">
         Your bet is saved to the room instantly, so the host can see it.

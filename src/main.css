@@ -161,6 +161,24 @@ body {
   gap: 10px;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.roulette-bet-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+}
+
+.roulette-bet-pill-label {
+  font-family: "Cinzel", ui-serif, Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .roulette-bet-panel {
