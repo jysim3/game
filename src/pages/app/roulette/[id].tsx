@@ -142,6 +142,7 @@ const useGameStore = createGameStore<RouletteGameData, RouletteUserData, Roulett
         });
 
         // Phase 2: reveal after the spin completes.
+        const REVEAL_MS = 7200;
         setTimeout(() => {
           updateGameData({
             status: "result",
@@ -150,7 +151,7 @@ const useGameStore = createGameStore<RouletteGameData, RouletteUserData, Roulett
               winningNumber,
             },
           });
-        }, 4200);
+        }, REVEAL_MS);
       },
       nextRound: () => {
         const { gameData, updateGameData, roomId } = get();
@@ -386,13 +387,13 @@ const RouletteWheel = ({
     // Rotate wheel so the winning segment lands under the pointer at top.
     const desired = -targetCenterAngle;
 
-    const extraSpins = 8;
+    const extraSpins = 12;
     const target = baseStart + extraSpins * 360 + desired;
 
     setSpinning(true);
     setRotation(target);
 
-    const timer = setTimeout(() => setSpinning(false), 4300);
+    const timer = setTimeout(() => setSpinning(false), 7400);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, winningNumber, startedAt]);
@@ -434,8 +435,8 @@ const RouletteWheel = ({
         style={{
           transform: `rotate(${rotation}deg)`,
           transition: spinning
-            ? "transform 4.2s cubic-bezier(0.12, 0.85, 0.1, 1)"
-            : "none",
+            ? "transform 7.2s cubic-bezier(0.07, 0.92, 0.04, 1)"
+            : "none", 
         }}
         aria-label="Roulette wheel"
       >
