@@ -269,24 +269,27 @@ function RouletteRoom() {
               </>
             ) : (
               <Card styles={{ body: { padding: 12 } }}>
-                <YourBetPanel disabled={status !== "betting"} />
+                <Typography.Title level={5} style={{ margin: 0 }}>
+                  Place your bet
+                </Typography.Title>
+                <Typography.Text className="page-subtitle">
+                  Your controls are pinned to the bottom for quick access.
+                </Typography.Text>
               </Card>
             )}
           </Flex>
         </div>
 
-        {isHost ? <div className="fixed-bottom-spacer" /> : null}
+        <div className="fixed-bottom-spacer" />
       </div>
 
-      {isHost ? (
-        <div className="fixed-bottom">
-          <div className="fixed-bottom-inner">
-            <Card>
-              <YourBetPanel disabled={status !== "betting"} />
-            </Card>
-          </div>
+      <div className="fixed-bottom roulette-controls-bar">
+        <div className="fixed-bottom-inner">
+          <Card className="roulette-player-card">
+            <YourBetPanel disabled={status !== "betting"} />
+          </Card>
         </div>
-      ) : null}
+      </div>
     </Flex>
   );
 }

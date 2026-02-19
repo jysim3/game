@@ -106,6 +106,31 @@ body {
   z-index: 50;
 }
 
+/* Roulette controls: casino green felt */
+.roulette-controls-bar {
+  border-top: 1px solid rgba(212, 175, 55, 0.35);
+  background:
+    radial-gradient(1200px 220px at 20% 20%, rgba(255, 255, 255, 0.06), transparent 55%),
+    linear-gradient(180deg, rgba(10, 60, 40, 0.92), rgba(7, 38, 26, 0.92));
+}
+
+.roulette-player-card {
+  border: 1px solid rgba(212, 175, 55, 0.28) !important;
+  background: rgba(0, 0, 0, 0.18) !important;
+}
+
+/* Make bet controls feel more tappable */
+.roulette-player-card .ant-btn {
+  border-radius: 10px;
+}
+
+.roulette-player-card .ant-btn-primary {
+  background: rgba(212, 175, 55, 0.92);
+  border-color: rgba(212, 175, 55, 0.92);
+  color: rgba(0, 0, 0, 0.9);
+  font-weight: 700;
+}
+
 .fixed-bottom-inner {
   width: 100%;
   max-width: 980px;
