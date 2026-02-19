@@ -80,9 +80,17 @@ const Layout = () => {
   );
   const nickname = useNicknameStore((state) => state.nickname);
 
-  // Client-side cleanup: wipe all rooms occasionally (single-user site).
+  // Room cleanup is dangerous for multiplayer.
+  // Only allow wiping rooms in local dev, or if explicitly enabled.
   useEffect(() => {
     try {
+      const isLocalhost =
+        typeof window !== "undefined" &&
+        (window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1");
+      const explicitlyEnabled = localStorage.getItem("jysim3:enableRoomCleanup") === "1";
+      if (!isLocalhost && !explicitlyEnabled) return;
+
       const last = Number(localStorage.getItem(CLEANUP_KEY) || "0");
       if (Date.now() - last > CLEANUP_EVERY_MS) {
         localStorage.setItem(CLEANUP_KEY, String(Date.now()));
