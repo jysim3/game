@@ -149,9 +149,10 @@ const useGameStore = createGameStore<RouletteGameData, RouletteUserData, Roulett
         if (!roomId) return;
 
         // Slightly bias 0 to ~4x probability (still feels random).
-        const totalWeight = 4 + 36; // 0 has weight 4, 1-36 weight 1
+        const zeroWeight = 13; // 0 has ~13x weight vs any single 1–36
+        const totalWeight = zeroWeight + 36;
         const roll = Math.random() * totalWeight;
-        const winningNumber = roll < 4 ? 0 : 1 + Math.floor(roll - 4);
+        const winningNumber = roll < zeroWeight ? 0 : 1 + Math.floor(roll - zeroWeight);
 
         // Phase 1: start animation across all clients.
         updateGameData({
