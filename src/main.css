@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&display=swap");
+
 /* Global app styling */
 :root {
   --app-bg-1: #0b1220;
@@ -123,29 +125,132 @@ body {
 .roulette-controls-bar {
   border-top: 1px solid rgba(212, 175, 55, 0.35);
   background:
-    radial-gradient(1200px 220px at 20% 20%, rgba(255, 255, 255, 0.06), transparent 55%),
+    radial-gradient(
+      1200px 220px at 20% 20%,
+      rgba(255, 255, 255, 0.06),
+      transparent 55%
+    ),
     linear-gradient(180deg, rgba(10, 60, 40, 0.92), rgba(7, 38, 26, 0.92));
 }
 
+/* Player controls should NOT look like antd */
 .roulette-player-card {
   border: 1px solid rgba(212, 175, 55, 0.28) !important;
   background: rgba(0, 0, 0, 0.18) !important;
 }
 
-/* Make bet controls feel more tappable */
-.roulette-player-card .ant-btn {
-  border-radius: 10px;
+.roulette-player-card .ant-card-body {
+  padding: 12px;
 }
 
-.roulette-player-card .ant-btn-primary {
-  background: rgba(212, 175, 55, 0.92);
-  border-color: rgba(212, 175, 55, 0.92);
-  color: rgba(0, 0, 0, 0.9);
-  font-weight: 700;
+.roulette-player-card .ant-divider {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.roulette-player-card .ant-tag {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.roulette-player-card .ant-typography-title {
+  font-family: "Cinzel", ui-serif, Georgia, serif;
+  letter-spacing: 0.4px;
+}
+
+.roulette-control-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .roulette-bet-panel {
   margin-top: 6px;
+}
+
+.roulette-felt-panel {
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background:
+    radial-gradient(900px 240px at 25% 15%, rgba(255, 255, 255, 0.05), transparent 55%),
+    linear-gradient(180deg, rgba(8, 56, 38, 0.82), rgba(6, 34, 23, 0.82));
+}
+
+.roulette-felt-section {
+  margin-bottom: 10px;
+}
+
+.roulette-felt-section:last-child {
+  margin-bottom: 0;
+}
+
+.roulette-felt-label {
+  font-family: "Cinzel", ui-serif, Georgia, serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 2px 0 6px;
+}
+
+.roulette-felt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.roulette-felt-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.roulette-felt-btn {
+  appearance: none;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 10px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform 90ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.roulette-felt-btn:hover {
+  border-color: rgba(212, 175, 55, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.roulette-felt-btn:active {
+  transform: translateY(1px);
+}
+
+.roulette-felt-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.roulette-felt-btn:focus-visible {
+  outline: 2px solid rgba(212, 175, 55, 0.55);
+  outline-offset: 2px;
+}
+
+.roulette-felt-btn-red {
+  border-color: rgba(231, 76, 60, 0.45);
+  background: rgba(192, 57, 43, 0.22);
+}
+
+.roulette-felt-btn-black {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.roulette-felt-btn-ghost {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-weight: 700;
 }
 
 .fixed-bottom-inner {

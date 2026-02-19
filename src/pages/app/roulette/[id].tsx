@@ -1,5 +1,5 @@
 import { CrownOutlined } from "@ant-design/icons";
-import { Button, Card, Divider, Flex, Space, Tag, Typography } from "antd";
+import { Button, Card, Divider, Flex, Tag, Typography } from "antd";
 import { List } from "antd-mobile";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
@@ -491,7 +491,7 @@ const HostPanel = ({ isHost }: { isHost: boolean }) => {
       {!isHost ? (
         <Tag>Only the host can spin</Tag>
       ) : (
-        <Space wrap>
+        <div>
           {status === "betting" ? (
             <Button type="primary" onClick={spin}>
               Spin
@@ -501,7 +501,7 @@ const HostPanel = ({ isHost }: { isHost: boolean }) => {
               Next round
             </Button>
           )}
-        </Space>
+        </div>
       )}
     </Flex>
   );
@@ -612,53 +612,114 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
           </Typography.Text>
         </div>
 
-        <Space wrap>
+        <div className="roulette-control-row">
           <Tag color={currentBet ? "blue" : "default"}>{describeBet(currentBet)}</Tag>
-          <Button disabled={!currentBet || disabled} onClick={clearBet}>
+          <button
+            type="button"
+            className="roulette-felt-btn roulette-felt-btn-ghost"
+            disabled={!currentBet || disabled}
+            onClick={clearBet}
+          >
             Clear
-          </Button>
-        </Space>
+          </button>
+        </div>
       </Flex>
 
       <Divider style={{ margin: "4px 0" }} />
 
       <div
-        className="roulette-bet-panel"
+        className="roulette-bet-panel roulette-felt-panel"
         style={{
-          opacity: disabled ? 0.5 : 1,
+          opacity: disabled ? 0.55 : 1,
           pointerEvents: disabled ? "none" : "auto",
         }}
       >
-        <Flex vertical gap={10}>
-          <Space wrap>
-            <Button type="primary" onClick={() => placeBet({ kind: "color", color: "red" })}>
+        <div className="roulette-felt-section">
+          <div className="roulette-felt-label">Color</div>
+          <div className="roulette-felt-grid">
+            <button
+              type="button"
+              className="roulette-felt-btn roulette-felt-btn-red"
+              onClick={() => placeBet({ kind: "color", color: "red" })}
+            >
               Red
-            </Button>
-            <Button onClick={() => placeBet({ kind: "color", color: "black" })}>Black</Button>
-          </Space>
+            </button>
+            <button
+              type="button"
+              className="roulette-felt-btn roulette-felt-btn-black"
+              onClick={() => placeBet({ kind: "color", color: "black" })}
+            >
+              Black
+            </button>
+          </div>
+        </div>
 
-          <Space wrap>
-            <Button type="primary" onClick={() => placeBet({ kind: "parity", parity: "even" })}>
+        <div className="roulette-felt-section">
+          <div className="roulette-felt-label">Even / Odd</div>
+          <div className="roulette-felt-grid">
+            <button
+              type="button"
+              className="roulette-felt-btn"
+              onClick={() => placeBet({ kind: "parity", parity: "even" })}
+            >
               Even
-            </Button>
-            <Button onClick={() => placeBet({ kind: "parity", parity: "odd" })}>Odd</Button>
-          </Space>
+            </button>
+            <button
+              type="button"
+              className="roulette-felt-btn"
+              onClick={() => placeBet({ kind: "parity", parity: "odd" })}
+            >
+              Odd
+            </button>
+          </div>
+        </div>
 
-          <Space wrap>
-            <Button type="primary" onClick={() => placeBet({ kind: "range", range: "low" })}>
+        <div className="roulette-felt-section">
+          <div className="roulette-felt-label">Low / High</div>
+          <div className="roulette-felt-grid">
+            <button
+              type="button"
+              className="roulette-felt-btn"
+              onClick={() => placeBet({ kind: "range", range: "low" })}
+            >
               1–18
-            </Button>
-            <Button onClick={() => placeBet({ kind: "range", range: "high" })}>19–36</Button>
-          </Space>
+            </button>
+            <button
+              type="button"
+              className="roulette-felt-btn"
+              onClick={() => placeBet({ kind: "range", range: "high" })}
+            >
+              19–36
+            </button>
+          </div>
+        </div>
 
-          <Space wrap>
-            <Button type="primary" onClick={() => placeBet({ kind: "dozen", dozen: 1 })}>
+        <div className="roulette-felt-section">
+          <div className="roulette-felt-label">Dozens</div>
+          <div className="roulette-felt-grid roulette-felt-grid-3">
+            <button
+              type="button"
+              className="roulette-felt-btn"
+              onClick={() => placeBet({ kind: "dozen", dozen: 1 })}
+            >
               1–12
-            </Button>
-            <Button onClick={() => placeBet({ kind: "dozen", dozen: 2 })}>13–24</Button>
-            <Button onClick={() => placeBet({ kind: "dozen", dozen: 3 })}>25–36</Button>
-          </Space>
-        </Flex>
+            </button>
+            <button
+              type="button"
+              className="roulette-felt-btn"
+              onClick={() => placeBet({ kind: "dozen", dozen: 2 })}
+            >
+              13–24
+            </button>
+            <button
+              type="button"
+              className="roulette-felt-btn"
+              onClick={() => placeBet({ kind: "dozen", dozen: 3 })}
+            >
+              25–36
+            </button>
+          </div>
+        </div>
       </div>
 
       <Typography.Text className="page-subtitle">
