@@ -77,6 +77,19 @@ body {
   margin: 0;
 }
 
+/* Ensure antd typography stays readable in dark theme */
+.app-card .ant-typography,
+.app-card .ant-typography-title,
+.app-card .ant-typography-caption,
+.app-card .ant-typography p,
+.app-card h1,
+.app-card h2,
+.app-card h3,
+.app-card h4,
+.app-card h5 {
+  color: var(--app-text);
+}
+
 .page-subtitle {
   color: var(--app-text-muted);
 }
@@ -179,6 +192,20 @@ body {
 .dice-tile-count {
   text-align: center;
   font-weight: 600;
+}
+
+/* Dark-mode card styling for antd */
+.app-card .ant-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+}
+
+.app-card .ant-card-head {
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-card .ant-card-head-title {
+  color: var(--app-text);
 }
 
 .app-card {
@@ -293,6 +320,34 @@ a {
 }
 
 /* Roulette wheel */
+.roulette-host-layout {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.roulette-host-left {
+  flex: 1 1 340px;
+}
+
+.roulette-host-right {
+  flex: 1 1 340px;
+  min-width: 320px;
+}
+
+@media (min-width: 920px) {
+  .roulette-host-layout {
+    flex-wrap: nowrap;
+  }
+  .roulette-host-left {
+    flex: 0 0 420px;
+  }
+  .roulette-host-right {
+    flex: 1 1 auto;
+  }
+}
+
 .roulette-wheel-wrap {
   position: relative;
   width: min(340px, 100%);

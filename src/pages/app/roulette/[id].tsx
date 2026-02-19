@@ -243,26 +243,40 @@ function RouletteRoom() {
 
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
         <div className="page">
-          <Flex vertical gap={12}>
-            <Card styles={{ body: { padding: 12 } }}>
-              <WheelPanel
-                status={status as any}
-                winningNumber={winningNumberForWheel}
-                startedAt={spinData?.round === round ? spinData.startedAt : undefined}
-              />
-            </Card>
-
-            {isHost ? (
-              <>
+          {isHost ? (
+            <div className="roulette-host-layout">
+              <div className="roulette-host-left">
                 <Card styles={{ body: { padding: 12 } }}>
-                  <HostPanel isHost={isHost} />
+                  <WheelPanel
+                    status={status as any}
+                    winningNumber={winningNumberForWheel}
+                    startedAt={spinData?.round === round ? spinData.startedAt : undefined}
+                  />
                 </Card>
+              </div>
 
-                <Card styles={{ body: { padding: 12 } }}>
-                  <BetsPanel isHost={isHost} />
-                </Card>
-              </>
-            ) : (
+              <div className="roulette-host-right">
+                <Flex vertical gap={12}>
+                  <Card styles={{ body: { padding: 12 } }}>
+                    <HostPanel isHost={isHost} />
+                  </Card>
+
+                  <Card styles={{ body: { padding: 12 } }}>
+                    <BetsPanel isHost={isHost} />
+                  </Card>
+                </Flex>
+              </div>
+            </div>
+          ) : (
+            <Flex vertical gap={12}>
+              <Card styles={{ body: { padding: 12 } }}>
+                <WheelPanel
+                  status={status as any}
+                  winningNumber={winningNumberForWheel}
+                  startedAt={spinData?.round === round ? spinData.startedAt : undefined}
+                />
+              </Card>
+
               <Card styles={{ body: { padding: 12 } }}>
                 <Typography.Title level={5} style={{ margin: 0 }}>
                   Place your bet
@@ -271,8 +285,8 @@ function RouletteRoom() {
                   Your controls are pinned to the bottom for quick access.
                 </Typography.Text>
               </Card>
-            )}
-          </Flex>
+            </Flex>
+          )}
         </div>
 
         <div className="roulette-bottom-spacer" />
