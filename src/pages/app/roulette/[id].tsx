@@ -580,8 +580,7 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
   const placeBet = useGameStore((s) => s.placeBet);
   const clearBet = useGameStore((s) => s.clearBet);
 
-  const MODES = ["Color", "Even/Odd", "Low/High", "Dozen"] as const;
-  const [mode, setMode] = useState<(typeof MODES)[number]>("Color");
+  // No tabs: show all quick bets in one felt panel
 
   const currentBet = userData?.round === round ? userData?.bet : undefined;
 
@@ -595,7 +594,7 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
             Your bet
           </Typography.Title>
           <Typography.Text className="page-subtitle">
-            {disabled ? "Betting is closed for this round." : "Pick a bet type, then select."}
+            {disabled ? "Betting is closed for this round." : "Tap a chip on the felt to place your bet."}
           </Typography.Text>
         </div>
 
@@ -609,21 +608,6 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
 
       <Divider style={{ margin: "4px 0" }} />
 
-      <div className="roulette-mode-bar" role="tablist" aria-label="Bet type">
-        {MODES.map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="tab"
-            aria-selected={mode === m}
-            className={`roulette-mode-chip ${mode === m ? "active" : ""}`}
-            onClick={() => setMode(m)}
-          >
-            {m}
-          </button>
-        ))}
-      </div>
-
       <div
         className="roulette-bet-panel"
         style={{
@@ -631,34 +615,28 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
           pointerEvents: disabled ? "none" : "auto",
         }}
       >
-        {mode === "Color" ? (
-          <Space wrap className="roulette-bet-options">
+        <Flex vertical gap={10}>
+          <Space wrap>
             <Button type="primary" onClick={() => placeBet({ kind: "color", color: "red" })}>
               Red
             </Button>
             <Button onClick={() => placeBet({ kind: "color", color: "black" })}>Black</Button>
           </Space>
-        ) : null}
 
-        {mode === "Even/Odd" ? (
           <Space wrap>
             <Button type="primary" onClick={() => placeBet({ kind: "parity", parity: "even" })}>
               Even
             </Button>
             <Button onClick={() => placeBet({ kind: "parity", parity: "odd" })}>Odd</Button>
           </Space>
-        ) : null}
 
-        {mode === "Low/High" ? (
           <Space wrap>
             <Button type="primary" onClick={() => placeBet({ kind: "range", range: "low" })}>
               1–18
             </Button>
             <Button onClick={() => placeBet({ kind: "range", range: "high" })}>19–36</Button>
           </Space>
-        ) : null}
 
-        {mode === "Dozen" ? (
           <Space wrap>
             <Button type="primary" onClick={() => placeBet({ kind: "dozen", dozen: 1 })}>
               1–12
@@ -666,7 +644,7 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
             <Button onClick={() => placeBet({ kind: "dozen", dozen: 2 })}>13–24</Button>
             <Button onClick={() => placeBet({ kind: "dozen", dozen: 3 })}>25–36</Button>
           </Space>
-        ) : null}
+        </Flex>
       </div>
 
       <Typography.Text className="page-subtitle">

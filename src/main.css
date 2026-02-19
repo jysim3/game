@@ -131,42 +131,6 @@ body {
   font-weight: 700;
 }
 
-/* Replace segmented tabs with "felt" mode chips */
-.roulette-mode-bar {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 6px;
-  margin: 0;
-  border-radius: 12px;
-  border: 1px solid rgba(212, 175, 55, 0.22);
-  background: rgba(0, 0, 0, 0.18);
-  -webkit-overflow-scrolling: touch;
-}
-
-.roulette-mode-chip {
-  flex: 0 0 auto;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.86);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.roulette-mode-chip.active {
-  border-color: rgba(212, 175, 55, 0.85);
-  background: rgba(212, 175, 55, 0.18);
-  color: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
-}
-
-.roulette-mode-chip:focus-visible {
-  outline: 2px solid rgba(212, 175, 55, 0.55);
-  outline-offset: 2px;
-}
-
 .roulette-bet-panel {
   margin-top: 6px;
 }
