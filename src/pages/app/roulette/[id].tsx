@@ -142,7 +142,7 @@ const useGameStore = createGameStore<RouletteGameData, RouletteUserData, Roulett
         });
 
         // Phase 2: reveal after the spin completes.
-        const REVEAL_MS = 7200;
+        const REVEAL_MS = 21600;
         setTimeout(() => {
           updateGameData({
             status: "result",
@@ -325,12 +325,18 @@ const WheelPanel = ({
           </Typography.Text>
         </div>
 
-        <Tag color={winningNumber === undefined ? "default" : getColor(winningNumber)}>
-          {winningNumber === undefined
-            ? status === "spinning"
-              ? "Spinning…"
-              : "Waiting…"
-            : `Winning: ${winningNumber}`}
+        <Tag
+          color={
+            status === "result" && winningNumber !== undefined
+              ? getColor(winningNumber)
+              : "default"
+          }
+        >
+          {status === "spinning"
+            ? "Spinning…"
+            : status === "result" && winningNumber !== undefined
+              ? `Winning: ${winningNumber}`
+              : "Waiting…"}
         </Tag>
       </Flex>
 
@@ -401,7 +407,7 @@ const RouletteWheel = ({
       setRotation(target);
     });
 
-    const timer = setTimeout(() => setSpinning(false), 7400);
+    const timer = setTimeout(() => setSpinning(false), 22000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, winningNumber, startedAt]);
@@ -443,7 +449,7 @@ const RouletteWheel = ({
         style={{
           transform: `rotate(${rotation}deg)`,
           transition: spinning
-            ? "transform 7.2s cubic-bezier(0.07, 0.92, 0.04, 1)"
+            ? "transform 21.6s cubic-bezier(0.07, 0.92, 0.04, 1)"
             : "none", 
         }}
         aria-label="Roulette wheel"
