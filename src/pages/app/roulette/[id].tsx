@@ -147,7 +147,11 @@ const useGameStore = createGameStore<RouletteGameData, RouletteUserData, Roulett
       spin: () => {
         const { gameData, updateGameData, roomId } = get();
         if (!roomId) return;
-        const winningNumber = Math.floor(Math.random() * 37); // 0-36
+
+        // Slightly bias 0 to ~4x probability (still feels random).
+        const totalWeight = 4 + 36; // 0 has weight 4, 1-36 weight 1
+        const roll = Math.random() * totalWeight;
+        const winningNumber = roll < 4 ? 0 : 1 + Math.floor(roll - 4);
 
         // Phase 1: start animation across all clients.
         updateGameData({
@@ -779,14 +783,14 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
                 className="roulette-felt-btn roulette-felt-btn-red"
                 onClick={() => placeBet({ kind: "color", color: "red" })}
               >
-                Red
+                Red 红
               </button>
               <button
                 type="button"
                 className="roulette-felt-btn roulette-felt-btn-black"
                 onClick={() => placeBet({ kind: "color", color: "black" })}
               >
-                Black
+                Black 黑
               </button>
             </div>
           </div>
@@ -799,14 +803,14 @@ const YourBetPanel = ({ disabled }: { disabled: boolean }) => {
                 className="roulette-felt-btn"
                 onClick={() => placeBet({ kind: "parity", parity: "even" })}
               >
-                Even / 偶
+                Even 双数
               </button>
               <button
                 type="button"
                 className="roulette-felt-btn"
                 onClick={() => placeBet({ kind: "parity", parity: "odd" })}
               >
-                Odd / 奇
+                Odd 单数
               </button>
             </div>
           </div>
