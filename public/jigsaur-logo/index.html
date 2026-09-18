@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jigsaur logo</title>
+<meta name="description" content="Jigsaur logo files: SVG and PNG, with and without the jigsaur.app wordmark.">
+<meta property="og:title" content="Jigsaur logo">
+<meta property="og:description" content="Download the Jigsaur logo as SVG or PNG, with or without the jigsaur.app wordmark.">
+<meta property="og:image" content="jigsaur-logo-full-white.png">
+<link rel="icon" type="image/svg+xml" href="jigsaur-logo-mark.svg">
+<style>
+  :root { --bg: #fff; --fg: #1f2418; --muted: #6b7060; --card: #f6f2e8; --line: #e6e0d2; --accent: #434631; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15170f; --fg: #eee9dc; --muted: #a09c8c; --card: #1f2216; --line: #2f3325; --accent: #d9d2bd; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px 16px 48px; background: var(--bg); color: var(--fg);
+         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 960px; margin: 0 auto; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  header img { width: 56px; height: 56px; }
+  h1 { font-size: 24px; margin: 0; }
+  p.sub { color: var(--muted); margin: 0 0 20px; }
+  .dl { display: inline-block; background: var(--accent); color: var(--bg); text-decoration: none;
+        padding: 10px 18px; border-radius: 999px; font-weight: 600; margin-bottom: 28px; }
+  h2.section { font-size: 17px; margin: 28px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .card .img { aspect-ratio: 1; display: grid; place-items: center; border-radius: 8px; overflow: hidden; padding: 8px;
+               background: repeating-conic-gradient(#0000 0 25%, #8884 0 50%) 0 0 / 20px 20px; }
+  .card .img.white { background: #fff; }
+  .card img { max-width: 100%; max-height: 100%; }
+  .card h3 { font-size: 14px; margin: 10px 0 2px; word-break: break-all; }
+  .card a { color: inherit; }
+  .card .meta { color: var(--muted); font-size: 13px; }
+  .notes { color: var(--muted); font-size: 14px; padding-left: 18px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="jigsaur-logo-mark.svg" alt="">
+    <h1>Jigsaur logo</h1>
+  </header>
+  <p class="sub">Official logo files for <a href="https://jigsaur.app">jigsaur.app</a>. Tap a file name to open it, then save it from your browser.</p>
+  <a class="dl" href="jigsaur-logo.zip" download>Download all (zip, 1.2 MB)</a>
+
+  <h2 class="section">With the jigsaur.app wordmark</h2>
+  <div class="grid">
+    <div class="card"><div class="img white"><img src="jigsaur-logo-full.svg" alt="Jigsaur logo with jigsaur.app wordmark, SVG"></div>
+      <h3><a href="jigsaur-logo-full.svg">jigsaur-logo-full.svg</a></h3><div class="meta">Vector, any size</div></div>
+    <div class="card"><div class="img"><img src="jigsaur-logo-full-transparent.png" alt="Jigsaur logo with wordmark, transparent PNG"></div>
+      <h3><a href="jigsaur-logo-full-transparent.png">jigsaur-logo-full-transparent.png</a></h3><div class="meta">3048 × 3108 · transparent background</div></div>
+    <div class="card"><div class="img white"><img src="jigsaur-logo-full-white.png" alt="Jigsaur logo with wordmark, white PNG"></div>
+      <h3><a href="jigsaur-logo-full-white.png">jigsaur-logo-full-white.png</a></h3><div class="meta">3048 × 3108 · white background</div></div>
+  </div>
+
+  <h2 class="section">Mark only</h2>
+  <div class="grid">
+    <div class="card"><div class="img white"><img src="jigsaur-logo-mark.svg" alt="Jigsaur mark, SVG"></div>
+      <h3><a href="jigsaur-logo-mark.svg">jigsaur-logo-mark.svg</a></h3><div class="meta">Vector, any size</div></div>
+    <div class="card"><div class="img"><img src="jigsaur-logo-mark-transparent.png" alt="Jigsaur mark, transparent PNG"></div>
+      <h3><a href="jigsaur-logo-mark-transparent.png">jigsaur-logo-mark-transparent.png</a></h3><div class="meta">2360 × 2360 · transparent background</div></div>
+    <div class="card"><div class="img white"><img src="jigsaur-logo-mark-white.png" alt="Jigsaur mark, white PNG"></div>
+      <h3><a href="jigsaur-logo-mark-white.png">jigsaur-logo-mark-white.png</a></h3><div class="meta">2360 × 2360 · white background</div></div>
+  </div>
+
+  <h2 class="section">Notes</h2>
+  <ul class="notes">
+    <li>Use the SVG wherever you can. It stays sharp at any size.</li>
+    <li>Use the transparent PNG on coloured backgrounds and the white PNG where transparency is not supported.</li>
+    <li>Please keep the proportions and colours as they are, and leave clear space around the logo.</li>
+  </ul>
+</main>
+</body>
+</html>
